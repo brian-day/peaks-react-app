@@ -1,3 +1,159 @@
+:root {
+  --text: #1f2328;
+  --muted: #656d76;
+  --border: #d0d7de;
+  --surface: #ffffff;
+  --background: #f6f8fa;
+  --accent: #0969da;
+  --trace: #1f2328;
+  --peak: #0969da;
+  --peak-unexpected: #bf8700;
+  --excluded: #8c959f;
+  --warning: #9a6700;
+  --error: #cf222e;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--background);
+}
+
 body {
   margin: 0;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app h1 {
+  font-size: 1.4rem;
+  margin: 0 0 12px;
+}
+
+.object-id-form {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.object-id-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.object-id-form input {
+  font: inherit;
+  font-family: ui-monospace, monospace;
+  padding: 4px 8px;
+  width: 18ch;
+}
+
+.object-id-form button {
+  font: inherit;
+  padding: 4px 12px;
+}
+
+.status {
+  color: var(--muted);
+}
+
+.messages {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.message--warning {
+  color: var(--warning);
+}
+
+.message--error {
+  color: var(--error);
+}
+
+.plot {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.plot svg {
+  display: block;
+}
+
+/* Axes */
+
+.axis line {
+  stroke: var(--muted);
+}
+
+.axis text {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.axis .axis-label {
+  fill: var(--text);
+  font-size: 12px;
+}
+
+/* Data */
+
+.trace {
+  fill: none;
+  stroke: var(--trace);
+  stroke-width: 1;
+}
+
+.peak {
+  --color: var(--peak);
+}
+
+.peak--unexpected {
+  --color: var(--peak-unexpected);
+}
+
+.peak--excluded {
+  --color: var(--excluded);
+}
+
+.peak-area {
+  fill: var(--color);
+  fill-opacity: 0.2;
+  stroke: none;
+}
+
+.peak-baseline {
+  stroke: var(--color);
+  stroke-dasharray: 4 3;
+}
+
+.peak-boundary {
+  fill: var(--surface);
+  stroke: var(--color);
+  stroke-width: 1.5;
+}
+
+.peak--parent .peak-area {
+  fill-opacity: 0.35;
+}
+
+.peak-label {
+  fill: var(--text);
+  font-size: 11px;
+}
+
+.threshold {
+  stroke: var(--peak);
+  stroke-width: 1.5;
+}
+
+.threshold--unexpected {
+  stroke: var(--peak-unexpected);
 }

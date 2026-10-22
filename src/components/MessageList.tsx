@@ -1,0 +1,15 @@
+import type { ApiMessage } from '../api/types'
+
+export function MessageList({ messages }: { messages: ApiMessage[] }) {
+  if (messages.length === 0) return null
+
+  return (
+    <ul className="messages">
+      {messages.map((m, index) => (
+        <li key={index} className={`message message--${m.level.toLowerCase()}`}>
+          {m.message}
+        </li>
+      ))}
+    </ul>
+  )
+}

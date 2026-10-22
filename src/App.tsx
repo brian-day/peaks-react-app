@@ -1,5 +1,26 @@
+import { MessageList } from './components/MessageList'
+import { ObjectIdForm } from './components/ObjectIdForm'
+import { useCreateSession } from './hooks/useCreateSession'
+import { ChromatogramPlot } from './plot/ChromatogramPlot'
+
 function App() {
-  return <h1>Peaks Preview</h1>
+  const { state, create } = useCreateSession()
+
+  return (
+    <main className="app">
+      <h1>Peaks Preview</h1>
+      <ObjectIdForm disabled={state.status === 'loading'} onSubmit={create} />
+
+      {state.status === 'loading' && <p className="status">Downloading and analyzing…</p>}
+      {state.status === 'failed' && <MessageList messages={state.messages} />}
+      {state.status === 'loaded' && (
+        <>
+          <MessageList messages={state.session.messages} />
+          <ChromatogramPlot dataset={state.session.dataset} />
+        </>
+      )}
+    </main>
+  )
 }
 
 export default App
