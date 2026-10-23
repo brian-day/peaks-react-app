@@ -1,0 +1,137 @@
+// The maths of zooming and panning, kept free of React and the DOM so it can be tested directly.
+
+import type { Point, XY } from '../api/types'
+
+/** A visible range on one axis, as `[min, max]` in data units. */
+export type Domain = readonly [min: number, max: number]
+
+/** The region of data the plot shows. */
+export type Viewport = { x: Domain; y: Domain }
+
+/** The narrowest span the plot will zoom to on each axis, in data units. */
+export type MinSpan = { x: number; y: number }
+
+// How much one mouse-wheel notch zooms in and out, as in the Mathematica preview.
+const WHEEL_ZOOM_IN_FACTOR = 1.1
+const WHEEL_ZOOM_OUT_FACTOR = 1.2
+
+// A zoom box smaller than this fraction of the view is taken as a slip of the mouse.
+const MIN_DRAG_FRACTION = 0.03
+
+// Room below the trace, so a baseline handle on the lowest point stays grabbable, and above it,
+// so labels at the tallest apex are not clipped.
+const BOTTOM_MARGIN_FRACTION = 0.02
+const TOP_MARGIN_FRACTION = 0.05
+
+/** The fully zoomed-out view of a trace, and how far into it the plot may zoom. */
+export function traceBounds(trace: readonly XY[]): { full: Viewport; minSpan: MinSpan } {
+  let [xMin, xMax, yMin, yMax] = [Infinity, -Infinity, Infinity, -Infinity]
+  for (const [x, y] of trace) {
+    xMin = Math.min(xMin, x)
+    xMax = Math.max(xMax, x)
+    yMin = Math.min(yMin, y)
+    yMax = Math.max(yMax, y)
+  }
+  const ySpan = yMax - yMin
+
+  return {
+    full: {
+      x: [xMin, xMax],
+      y: [yMin - BOTTOM_MARGIN_FRACTION * ySpan, yMax + TOP_MARGIN_FRACTION * ySpan],
+    },
+    // As in the Mathematica preview: 0.01 data units across, and 1/10000 of the trace's height.
+    minSpan: { x: 0.01, y: ySpan / 10000 },
+  }
+}
+
+/** Shifts a domain by `delta`, stopping at the edges of `full`. */
+export function pan(domain: Domain, delta: number, full: Domain): Domain {
+  const [min, max] = domain
+  if (min + delta <= full[0]) return [full[0], full[0] + (max - min)]
+  if (max + delta >= full[1]) return [full[1] - (max - min), full[1]]
+  return [min + delta, max + delta]
+}
+
+/** Moves a domain back inside `full` without changing its span, or returns `full` if wider. */
+export function fitWithin(domain: Domain, full: Domain): Domain {
+  const [min, max] = domain
+  if (max - min >= full[1] - full[0]) return full
+  if (min < full[0]) return [full[0], max + (full[0] - min)]
+  if (max > full[1]) return [min - (max - full[1]), full[1]]
+  return domain
+}
+
+/**
+ * Scales a domain's span by `spanScale` (below 1 zooms in) while keeping `anchor` where it is on
+ * screen. Leaves the domain alone rather than zoom in past `minSpan`.
+ */
+export function zoomAbout(
+  domain: Domain,
+  anchor: number,
+  spanScale: number,
+  full: Domain,
+  minSpan: number,
+): Domain {
+  const [min, max] = domain
+  if ((max - min) * spanScale < minSpan) return domain
+  return fitWithin([anchor + (min - anchor) * spanScale, anchor + (max - anchor) * spanScale], full)
+}
+
+/**
+ * Zooms the view for a scroll of `notches` (positive scrolls down, zooming out) with the pointer
+ * at `fraction` of the way across the plot area, measured from its bottom-left corner.
+ *
+ * A pointer left of the plot area (over the y axis) zooms only y, and one below it (over the
+ * x axis) zooms only x.
+ */
+export function wheelZoom(
+  view: Viewport,
+  fraction: { x: number; y: number },
+  notches: number,
+  full: Viewport,
+  minSpan: MinSpan,
+): Viewport {
+  const spanScale = notches < 0 ? WHEEL_ZOOM_IN_FACTOR ** notches : WHEEL_ZOOM_OUT_FACTOR ** notches
+  const anchor = {
+    x: view.x[0] + fraction.x * (view.x[1] - view.x[0]),
+    y: view.y[0] + fraction.y * (view.y[1] - view.y[0]),
+  }
+
+  return {
+    x: fraction.x >= 0 ? zoomAbout(view.x, anchor.x, spanScale, full.x, minSpan.x) : view.x,
+    y: fraction.y >= 0 ? zoomAbout(view.y, anchor.y, spanScale, full.y, minSpan.y) : view.y,
+  }
+}
+
+/** Moves a point onto the nearest edge of the view if it lies outside it. */
+export function clampToViewport(point: Point, view: Viewport): Point {
+  return {
+    x: Math.min(Math.max(point.x, view.x[0]), view.x[1]),
+    y: Math.min(Math.max(point.y, view.y[0]), view.y[1]),
+  }
+}
+
+export type ZoomBoxOutcome =
+  /** The drag was too short to mean anything. */
+  | { kind: 'none' }
+  /** The box is narrower than the plot will zoom to. */
+  | { kind: 'tooSmall' }
+  | { kind: 'zoom'; viewport: Viewport }
+
+/** What releasing a zoom box dragged from `start` to `end` within `view` would do. */
+export function zoomBoxOutcome(start: Point, end: Point, view: Viewport, minSpan: MinSpan): ZoomBoxOutcome {
+  const width = Math.abs(end.x - start.x)
+  const height = Math.abs(end.y - start.y)
+
+  const dragFraction = Math.hypot(width / (view.x[1] - view.x[0]), height / (view.y[1] - view.y[0]))
+  if (dragFraction < MIN_DRAG_FRACTION) return { kind: 'none' }
+  if (width < minSpan.x || height < minSpan.y) return { kind: 'tooSmall' }
+
+  return {
+    kind: 'zoom',
+    viewport: {
+      x: [Math.min(start.x, end.x), Math.max(start.x, end.x)],
+      y: [Math.min(start.y, end.y), Math.max(start.y, end.y)],
+    },
+  }
+}

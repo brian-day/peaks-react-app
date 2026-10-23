@@ -85,6 +85,8 @@ body {
 
 .plot svg {
   display: block;
+  /* Dragging and double-clicking the plot would otherwise select its axis labels. */
+  user-select: none;
 }
 
 /* Axes */
@@ -156,4 +158,32 @@ body {
 
 .threshold--unexpected {
   stroke: var(--peak-unexpected);
+}
+
+/* Zooming and panning */
+
+.zoom-pan-layer {
+  fill: transparent;
+  cursor: crosshair;
+  /* Pointer drags zoom and pan the plot rather than scroll or zoom the page on touch screens. */
+  touch-action: none;
+}
+
+.zoom-pan-layer--panning {
+  cursor: grabbing;
+}
+
+.zoom-box {
+  fill: var(--muted);
+  fill-opacity: 0.1;
+  stroke: var(--text);
+  stroke-opacity: 0.7;
+  stroke-dasharray: 4 3;
+  pointer-events: none;
+}
+
+.zoom-box--too-small {
+  fill: none;
+  stroke: var(--error);
+  stroke-opacity: 1;
 }

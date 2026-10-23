@@ -16,7 +16,8 @@ function App() {
       {state.status === 'loaded' && (
         <>
           <MessageList messages={state.session.messages} />
-          <ChromatogramPlot dataset={state.session.dataset} />
+          {/* A new key per session gives each one a fresh plot, so a new analysis starts zoomed out. */}
+          <ChromatogramPlot key={state.session.sessionId} dataset={state.session.dataset} />
         </>
       )}
     </main>
