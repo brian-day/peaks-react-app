@@ -12,6 +12,7 @@ import { PlotContext, type PlotGeometry } from './plotContext'
 import { PlotToolbar } from './PlotToolbar'
 import { dataPath, dataTransform } from './scale'
 import { SecondDerivativeCurve } from './SecondDerivativeCurve'
+import { ThresholdBar } from './ThresholdBar'
 import { useOverlays } from './useOverlays'
 import { useWheelZoom } from './useWheelZoom'
 import {
@@ -122,23 +123,27 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
     [secondView, plotHeight],
   )
 
-  const plot = useMemo<PlotGeometry>(
-    () => ({
+  const plot = useMemo<PlotGeometry>(() => {
+    // Reads the SVG's position when called, from a pointer event, not while rendering.
+    const pointerToPixels = ({ clientX, clientY }: { clientX: number; clientY: number }) => {
+      const bounds = svgRef.current?.getBoundingClientRect()
+      return {
+        x: clientX - (bounds?.left ?? 0) - MARGIN.left,
+        y: clientY - (bounds?.top ?? 0) - MARGIN.top,
+      }
+    }
+    return {
       xScale,
       yScale,
       width: plotWidth,
       height: plotHeight,
-      // Reads the SVG's position when called, from a pointer event, not while rendering.
-      pointerToData: ({ clientX, clientY }) => {
-        const bounds = svgRef.current?.getBoundingClientRect()
-        return {
-          x: xScale.invert(clientX - (bounds?.left ?? 0) - MARGIN.left),
-          y: yScale.invert(clientY - (bounds?.top ?? 0) - MARGIN.top),
-        }
+      pointerToPixels,
+      pointerToData: (event) => {
+        const pixels = pointerToPixels(event)
+        return { x: xScale.invert(pixels.x), y: yScale.invert(pixels.y) }
       },
-    }),
-    [xScale, yScale, plotWidth, plotHeight],
-  )
+    }
+  }, [xScale, yScale, plotWidth, plotHeight])
 
   // Built once per trace; zooming and panning only change the transform it is drawn with.
   const tracePath = useMemo(() => dataPath(dataset.trace), [dataset.trace])
@@ -246,6 +251,14 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
                     <SecondDerivativeCurve
                       points={overlays.negativeSecondDerivative}
                       scale={secondDerivativeScale}
+                    />
+                  )}
+                  {/* On the −y'' axis, so only while −y'' is drawn to read it against. */}
+                  {showSecondDerivative && overlays && dataset.curvatureSettings && (
+                    <ThresholdBar
+                      settings={dataset.curvatureSettings}
+                      scale={secondDerivativeScale}
+                      onCommand={onCommand}
                     />
                   )}
                 </g>

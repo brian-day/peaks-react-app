@@ -9,7 +9,9 @@ export type PlotGeometry = {
   /** The plot area's size in pixels. */
   width: number
   height: number
-  /** Where a pointer is, in data coordinates. */
+  /** Where a pointer is, in pixels from the plot area's top-left corner. */
+  pointerToPixels: (event: { clientX: number; clientY: number }) => Point
+  /** Where a pointer is, in data coordinates on the trace's axes. */
   pointerToData: (event: { clientX: number; clientY: number }) => Point
 }
 
