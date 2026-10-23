@@ -111,6 +111,8 @@ body {
   fill: none;
   stroke: var(--trace);
   stroke-width: 1;
+  /* The trace is drawn through a data-to-pixel transform; keep its line 1px wide regardless. */
+  vector-effect: non-scaling-stroke;
 }
 
 .peak {

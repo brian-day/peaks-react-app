@@ -4,7 +4,7 @@ import type { DatasetSnapshot } from '../api/types'
 import { useElementSize } from '../hooks/useElementSize'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
-import { linePath } from './scale'
+import { dataPath, dataTransform } from './scale'
 import { useWheelZoom } from './useWheelZoom'
 import { traceBounds, type Viewport } from './viewport'
 import { ZoomPanLayer } from './ZoomPanLayer'
@@ -43,7 +43,8 @@ export function ChromatogramPlot({ dataset }: { dataset: DatasetSnapshot }) {
     [view, plotWidth, plotHeight],
   )
 
-  const tracePath = useMemo(() => linePath(dataset.trace, xScale, yScale), [dataset.trace, xScale, yScale])
+  // Built once per trace; zooming and panning only change the transform it is drawn with.
+  const tracePath = useMemo(() => dataPath(dataset.trace), [dataset.trace])
 
   return (
     <div ref={containerRef} className="plot">
@@ -60,7 +61,7 @@ export function ChromatogramPlot({ dataset }: { dataset: DatasetSnapshot }) {
             <Axis orientation="left" scale={yScale} offset={MARGIN.left - 16} label={dataset.yUnits} />
             <g clipPath="url(#plot-area)">
               <AnalysisLayer analysis={dataset.analysis} xScale={xScale} yScale={yScale} />
-              <path className="trace" d={tracePath} />
+              <path className="trace" d={tracePath} transform={dataTransform(xScale, yScale)} />
             </g>
             <ZoomPanLayer
               view={view}
