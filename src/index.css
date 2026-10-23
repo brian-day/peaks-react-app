@@ -366,6 +366,10 @@ body {
   color: var(--muted);
 }
 
+.peak-row--highlighted td {
+  background: color-mix(in srgb, var(--peak) 12%, var(--surface));
+}
+
 .column-picker {
   position: relative;
 }

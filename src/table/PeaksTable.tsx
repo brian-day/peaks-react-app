@@ -9,6 +9,10 @@ type Props = {
   /** The analysis the rows belong to, for each peak's label and whether it is the parent. */
   analysis: AnalysisView
   units: AxisUnits
+  /** The {@link peakKey} of the peak to highlight, whether hovered here or in the plot. */
+  hoveredKey: string | null
+  /** Called with a row's peak as the pointer enters it, and `null` as it leaves. */
+  onHoverPeak: (key: string | null) => void
 }
 
 const KIND_LABELS: Record<PeakRow['kind'], string | null> = {
@@ -18,7 +22,7 @@ const KIND_LABELS: Record<PeakRow['kind'], string | null> = {
 }
 
 /** The peaks' properties, one row per peak, with a choice of which columns to show. */
-export function PeaksTable({ rows, analysis, units }: Props) {
+export function PeaksTable({ rows, analysis, units, hoveredKey, onHoverPeak }: Props) {
   const [shown, setShown] = useState<ReadonlySet<ColumnKey>>(() => new Set(DEFAULT_COLUMNS))
   const columns = COLUMNS.filter((column) => shown.has(column.key))
 
@@ -61,7 +65,18 @@ export function PeaksTable({ rows, analysis, units }: Props) {
                 const peak = peaksByKey.get(key)
                 const kindLabel = KIND_LABELS[row.kind]
                 return (
-                  <tr key={key} className={kindLabel ? 'peak-row peak-row--muted' : 'peak-row'}>
+                  <tr
+                    key={key}
+                    className={[
+                      'peak-row',
+                      kindLabel && 'peak-row--muted',
+                      key === hoveredKey && 'peak-row--highlighted',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onMouseEnter={() => onHoverPeak(key)}
+                    onMouseLeave={() => onHoverPeak(null)}
+                  >
                     <td>{peak?.label || '–'}</td>
                     <td>{peak?.isParent ? '✓' : ''}</td>
                     <td>{kindLabel ?? ''}</td>

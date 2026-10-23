@@ -39,6 +39,10 @@ type Props = {
   method: Method
   /** Sends an edit to the analysis, resolving once it has been applied or has failed. */
   onCommand: (command: Command) => Promise<void>
+  /** The {@link peakKey} of the peak to highlight, whether hovered here or elsewhere. */
+  hoveredKey: string | null
+  /** Called with the peak under the pointer as it moves over the plot, or `null`. */
+  onHoverPeak: (key: string | null) => void
 }
 
 /**
@@ -53,7 +57,7 @@ type Props = {
  * The zoom starts fully out and is kept as the analysis changes; give the plot a new `key` to
  * start over.
  */
-export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Props) {
+export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hoveredKey, onHoverPeak }: Props) {
   const [chosenMode, setMode] = useState<Mode>('zoom')
   // Switching away from Manual leaves nothing to add peaks to, so dragging zooms again.
   const mode = chosenMode === 'addPeak' && method !== 'Manual' ? 'zoom' : chosenMode
@@ -66,13 +70,12 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
   const showRightAxis = showSecondDerivative && overlays !== null
   const margin = showRightAxis ? { ...MARGIN, right: RIGHT_AXIS_MARGIN } : MARGIN
 
-  // The peak under the pointer, highlighted. Found by position rather than by the peaks' own
-  // pointer events, since the peaks let the pointer through to the zoom and pan layer.
-  const [hoveredKey, setHoveredKey] = useState<string | null>(null)
+  // The peak under the pointer, found by position rather than by the peaks' own pointer events,
+  // since the peaks let the pointer through to the zoom and pan layer.
   const peaks = useMemo(() => allPeaks(dataset.analysis), [dataset.analysis])
   const hover = (point: Point | null) => {
     const peak = point && peakAt(point, peaks)
-    setHoveredKey(peak ? peakKey(peak.id) : null)
+    onHoverPeak(peak ? peakKey(peak.id) : null)
   }
 
   const [containerRef, { width }] = useElementSize<HTMLDivElement>()

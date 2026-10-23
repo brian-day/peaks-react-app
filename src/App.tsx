@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { MessageList } from './components/MessageList'
 import { ObjectIdForm } from './components/ObjectIdForm'
 import { useSession } from './hooks/useSession'
@@ -6,6 +7,8 @@ import { PeaksTable } from './table/PeaksTable'
 
 function App() {
   const { state, create, sendCommand } = useSession()
+  // The peak under the pointer in the plot or the table, highlighted in both.
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null)
 
   return (
     <main className="app">
@@ -24,12 +27,16 @@ function App() {
             dataset={state.session.dataset}
             method={state.method}
             onCommand={sendCommand}
+            hoveredKey={hoveredKey}
+            onHoverPeak={setHoveredKey}
           />
           {/* No per-session key here: the chosen columns carry over to the next analysis. */}
           <PeaksTable
             rows={state.session.dataset.table}
             analysis={state.session.dataset.analysis}
             units={{ x: state.session.dataset.xUnits, y: state.session.dataset.yUnits }}
+            hoveredKey={hoveredKey}
+            onHoverPeak={setHoveredKey}
           />
         </>
       )}
