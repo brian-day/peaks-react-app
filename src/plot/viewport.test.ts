@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   clampToViewport,
+  fitToVisible,
   fitWithin,
   pan,
   traceBounds,
@@ -132,5 +133,31 @@ describe('zoomBoxOutcome', () => {
       kind: 'zoom',
       viewport: { x: [40, 60], y: [2, 8] },
     })
+  })
+})
+
+describe('fitToVisible', () => {
+  const curve: [number, number][] = [
+    [0, 5],
+    [1, -2],
+    [2, 8],
+    [3, 4],
+    [4, 100],
+  ]
+
+  it('spans only the points within the visible x range, with a 5% margin', () => {
+    expect(fitToVisible(curve, [0.5, 3.5])).toEqual([-2.5, 8.5])
+  })
+
+  it('includes points exactly on the edges of the range', () => {
+    expect(fitToVisible(curve, [1, 2])).toEqual([-2.5, 8.5])
+  })
+
+  it('gives a flat stretch some height', () => {
+    expect(fitToVisible([[0, 10], [1, 10]], [0, 1])).toEqual([9.5, 10.5])
+  })
+
+  it('is null when no point is visible', () => {
+    expect(fitToVisible(curve, [4.5, 6])).toBeNull()
   })
 })

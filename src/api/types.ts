@@ -106,5 +106,16 @@ export type Command =
   | { kind: 'addManualPeak'; low: number; high: number }
   | { kind: 'updateManualPeak'; peakId: number; low: Point; high: Point }
 
+/**
+ * Curves drawn over the trace under the Curvature method, mirroring DVA's
+ * `peaks_server/src/overlays.rs`.
+ */
+export type Overlays = {
+  /** The smoothed data the method detects peaks in, in the trace's units. */
+  smoothed: XY[]
+  /** `[x, -y'']` of the smoothed data, whose bumps are the peaks. */
+  negativeSecondDerivative: XY[]
+}
+
 /** The analysis and its table after an edit. */
 export type CommandResult = { analysis: AnalysisView; table: PeakRow[] }

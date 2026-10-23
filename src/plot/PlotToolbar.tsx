@@ -1,5 +1,6 @@
 import type { Method } from '../api/types'
 import type { Mode } from './InteractionLayer'
+import type { ShownOverlays } from './OverlayLayer'
 
 // Threshold is left out until the app can create thresholds; switching to it would show nothing.
 const METHODS: Method[] = ['Curvature', 'Manual']
@@ -10,15 +11,29 @@ const MODES: { mode: Mode; label: string; hint: string }[] = [
   { mode: 'addPeak', label: 'Add peak', hint: 'Drag across a peak to add it, or hold Alt (Option) in any mode' },
 ]
 
+const OVERLAYS: { key: keyof ShownOverlays; label: string; hint: string }[] = [
+  { key: 'smoothed', label: 'Smoothed', hint: 'The smoothed data the Curvature method detects peaks in' },
+  {
+    key: 'secondDerivative',
+    label: '−y″',
+    hint: 'The negative second derivative of the smoothed data, on the right-hand axis; its bumps are the peaks',
+  },
+]
+
 type Props = {
   method: Method
   onMethodChange: (method: Method) => void
   mode: Mode
   onModeChange: (mode: Mode) => void
+  overlays: ShownOverlays
+  onOverlaysChange: (overlays: ShownOverlays) => void
 }
 
-/** Chooses the peak-picking method, and what dragging across the plot does. */
-export function PlotToolbar({ method, onMethodChange, mode, onModeChange }: Props) {
+/**
+ * Chooses the peak-picking method, what dragging across the plot does, and under the Curvature
+ * method which overlays are drawn.
+ */
+export function PlotToolbar({ method, onMethodChange, mode, onModeChange, overlays, onOverlaysChange }: Props) {
   return (
     <div className="plot-toolbar">
       <ButtonGroup label="Method">
@@ -43,6 +58,23 @@ export function PlotToolbar({ method, onMethodChange, mode, onModeChange }: Prop
           </button>
         ))}
       </ButtonGroup>
+      {method === 'Curvature' && (
+        <ButtonGroup label="Show">
+          {OVERLAYS.map(({ key, label, hint }) => (
+            <button
+              key={key}
+              type="button"
+              title={hint}
+              aria-pressed={overlays[key]}
+              onClick={() => onOverlaysChange({ ...overlays, [key]: !overlays[key] })}
+            >
+              {/* The swatch doubles as the curve's legend. */}
+              <span className={`swatch swatch--${key}`} aria-hidden="true" />
+              {label}
+            </button>
+          ))}
+        </ButtonGroup>
+      )}
     </div>
   )
 }

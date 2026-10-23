@@ -20,6 +20,7 @@ function App() {
           {/* A new key per session gives each one a fresh plot, so a new analysis starts zoomed out. */}
           <ChromatogramPlot
             key={state.session.sessionId}
+            sessionId={state.session.sessionId}
             dataset={state.session.dataset}
             method={state.method}
             onCommand={sendCommand}

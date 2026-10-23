@@ -103,6 +103,37 @@ export function wheelZoom(
   }
 }
 
+// Room above and below a curve fitted to the view, so its extremes are not drawn on the edges.
+const FIT_MARGIN_FRACTION = 0.05
+
+/**
+ * The y range of the points whose x is within `x`, with a margin above and below; `null` if none
+ * are. The points must be in increasing order of x, as a trace is.
+ */
+export function fitToVisible(points: readonly XY[], x: Domain): Domain | null {
+  // The first point at or after the view's left edge, found by bisection: curves are long, and
+  // this runs on every frame of a pan.
+  let low = 0
+  let high = points.length
+  while (low < high) {
+    const mid = (low + high) >> 1
+    if (points[mid][0] < x[0]) low = mid + 1
+    else high = mid
+  }
+
+  let yMin = Infinity
+  let yMax = -Infinity
+  for (let i = low; i < points.length && points[i][0] <= x[1]; i++) {
+    yMin = Math.min(yMin, points[i][1])
+    yMax = Math.max(yMax, points[i][1])
+  }
+  if (yMin > yMax) return null
+
+  // A flat stretch still gets some height, so it draws as a line rather than nothing.
+  const margin = (yMax - yMin) * FIT_MARGIN_FRACTION || Math.abs(yMax) * FIT_MARGIN_FRACTION || 1
+  return [yMin - margin, yMax + margin]
+}
+
 /** Moves a point onto the nearest edge of the view if it lies outside it. */
 export function clampToViewport(point: Point, view: Viewport): Point {
   return {

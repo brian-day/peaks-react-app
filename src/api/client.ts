@@ -1,4 +1,4 @@
-import type { ApiMessage, Command, CommandResult, CreatedSession } from './types'
+import type { ApiMessage, Command, CommandResult, CreatedSession, Overlays } from './types'
 
 /** A request that failed, with the messages explaining why. */
 export class ApiError extends Error {
@@ -12,19 +12,30 @@ export class ApiError extends Error {
 
 /** Downloads and analyzes an `Object[Data, Chromatography]`, starting a session for it. */
 export function createSession(objectId: string): Promise<CreatedSession> {
-  return post('/api/sessions', { objectId })
+  return request('POST', '/api/sessions', { body: { objectId } })
 }
 
 /** Applies one edit to a session's analysis. */
 export function applyCommand(sessionId: string, command: Command): Promise<CommandResult> {
-  return post(`/api/sessions/${sessionId}/commands`, command)
+  return request('POST', `/api/sessions/${sessionId}/commands`, { body: command })
 }
 
-async function post<T>(url: string, body: unknown): Promise<T> {
+/** The curves drawn over the trace, which exist only under the Curvature method. */
+export function getOverlays(sessionId: string, signal?: AbortSignal): Promise<Overlays> {
+  return request('GET', `/api/sessions/${sessionId}/overlays`, { signal })
+}
+
+async function request<T>(
+  method: 'GET' | 'POST',
+  url: string,
+  { body, signal }: { body?: unknown; signal?: AbortSignal },
+): Promise<T> {
   const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    method,
+    signal,
+    ...(body === undefined
+      ? {}
+      : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
   })
 
   if (response.ok) {
