@@ -16,6 +16,8 @@ type Props = {
   full: Viewport
   minSpan: MinSpan
   onViewChange: (view: Viewport) => void
+  /** Zooms all the way out; double-clicking does this. */
+  onResetView: () => void
   onAddPeak: (low: number, high: number) => void
 }
 
@@ -32,7 +34,16 @@ type Drag =
  * peak. Holding Shift pans, and Alt (Option) adds a peak, for one drag whatever the mode.
  * Double-click zooms all the way out.
  */
-export function InteractionLayer({ mode, canAddPeaks, view, full, minSpan, onViewChange, onAddPeak }: Props) {
+export function InteractionLayer({
+  mode,
+  canAddPeaks,
+  view,
+  full,
+  minSpan,
+  onViewChange,
+  onResetView,
+  onAddPeak,
+}: Props) {
   const { xScale, width, height, pointerToData } = usePlot()
   const [drag, setDrag] = useState<Drag | null>(null)
 
@@ -95,7 +106,7 @@ export function InteractionLayer({ mode, canAddPeaks, view, full, minSpan, onVie
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={() => setDrag(null)}
-        onDoubleClick={() => onViewChange(full)}
+        onDoubleClick={onResetView}
       />
       {drag?.kind === 'zoomBox' && <ZoomBox drag={drag} view={view} minSpan={minSpan} />}
       {drag?.kind === 'addPeak' && (

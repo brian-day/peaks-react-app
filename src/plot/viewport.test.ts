@@ -3,6 +3,7 @@ import {
   clampToViewport,
   fitToVisible,
   fitWithin,
+  followProportionally,
   pan,
   traceBounds,
   wheelZoom,
@@ -76,10 +77,10 @@ describe('zoomAbout', () => {
 })
 
 describe('wheelZoom', () => {
-  const view: Viewport = { x: [20, 60], y: [2, 6] }
+  const view = { x: [20, 60], y: [2, 6], y2: null } as const
 
   it('zooms both axes in by 1.1 per notch about the pointer inside the plot', () => {
-    const zoomed = wheelZoom(view, { x: 0.5, y: 0.5 }, -1, full, minSpan)
+    const zoomed = wheelZoom(view, { x: 0.5, y: 0.5 }, -1, full, minSpan, null)
     expect(zoomed.x[0]).toBeCloseTo(21.818181818)
     expect(zoomed.x[1]).toBeCloseTo(58.181818182)
     expect(zoomed.y[0]).toBeCloseTo(2.181818182)
@@ -87,7 +88,7 @@ describe('wheelZoom', () => {
   })
 
   it('zooms both axes out by 1.2 per notch', () => {
-    const zoomed = wheelZoom(view, { x: 0.5, y: 0.5 }, 1, full, minSpan)
+    const zoomed = wheelZoom(view, { x: 0.5, y: 0.5 }, 1, full, minSpan, null)
     expect(zoomed.x[0]).toBeCloseTo(16)
     expect(zoomed.x[1]).toBeCloseTo(64)
     expect(zoomed.y[0]).toBeCloseTo(1.6)
@@ -95,17 +96,64 @@ describe('wheelZoom', () => {
   })
 
   it('zooms only y with the pointer over the y axis', () => {
-    const zoomed = wheelZoom(view, { x: -0.1, y: 0.5 }, 1, full, minSpan)
+    const zoomed = wheelZoom(view, { x: -0.1, y: 0.5 }, 1, full, minSpan, null)
     expect(zoomed.x).toEqual([20, 60])
     expect(zoomed.y[0]).toBeCloseTo(1.6)
     expect(zoomed.y[1]).toBeCloseTo(6.4)
   })
 
   it('zooms only x with the pointer over the x axis', () => {
-    const zoomed = wheelZoom(view, { x: 0.5, y: -0.1 }, 1, full, minSpan)
+    const zoomed = wheelZoom(view, { x: 0.5, y: -0.1 }, 1, full, minSpan, null)
     expect(zoomed.x[0]).toBeCloseTo(16)
     expect(zoomed.x[1]).toBeCloseTo(64)
     expect(zoomed.y).toEqual([2, 6])
+  })
+
+  describe('with the −y″ axis shown', () => {
+    const withSecondary = { x: [20, 60], y: [2, 6], y2: [0, 100] } as const
+    const secondary = { full: [-500, 500] as const, minSpan: 1 }
+
+    it('zooms −y″ in proportion with y inside the plot', () => {
+      const zoomed = wheelZoom(withSecondary, { x: 0.5, y: 0.5 }, 1, full, minSpan, secondary)
+      expect(zoomed.y[0]).toBeCloseTo(1.6)
+      expect(zoomed.y[1]).toBeCloseTo(6.4)
+      expect(zoomed.y2?.[0]).toBeCloseTo(-10)
+      expect(zoomed.y2?.[1]).toBeCloseTo(110)
+    })
+
+    it('zooms only −y″ with the pointer over its axis, about the pointer', () => {
+      const zoomed = wheelZoom(withSecondary, { x: 1.1, y: 0.25 }, 1, full, minSpan, secondary)
+      expect(zoomed.x).toEqual([20, 60])
+      expect(zoomed.y).toEqual([2, 6])
+      expect(zoomed.y2?.[0]).toBeCloseTo(-5)
+      expect(zoomed.y2?.[1]).toBeCloseTo(115)
+    })
+
+    it('starts −y″ from its whole range until the user has moved it', () => {
+      const unmoved = { x: [20, 60], y: [2, 6], y2: null } as const
+      const zoomed = wheelZoom(unmoved, { x: 0.5, y: 0.5 }, 1, full, minSpan, secondary)
+      // The whole range, [-500, 500], zoomed out by 1.2 about its middle along with y. Following
+      // y keeps the two in step, so −y″ is not held within its whole range as y is within its own.
+      expect(zoomed.y2?.[0]).toBeCloseTo(-600)
+      expect(zoomed.y2?.[1]).toBeCloseTo(600)
+    })
+
+    it('leaves −y″ alone when zooming only y over the y axis', () => {
+      const zoomed = wheelZoom(withSecondary, { x: -0.1, y: 0.5 }, 1, full, minSpan, secondary)
+      expect(zoomed.y2).toEqual([0, 100])
+    })
+  })
+})
+
+describe('followProportionally', () => {
+  it('zooms the other domain to the same fraction of its span', () => {
+    // From the whole of [0, 10] to its middle fifth.
+    expect(followProportionally([0, 10], [4, 6], [-100, 400])).toEqual([100, 200])
+  })
+
+  it('pans the other domain by the same fraction of its span', () => {
+    // A tenth of the span upwards.
+    expect(followProportionally([0, 10], [1, 11], [-100, 400])).toEqual([-50, 450])
   })
 })
 

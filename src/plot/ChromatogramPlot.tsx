@@ -1,10 +1,11 @@
 import { scaleLinear } from 'd3-scale'
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import type { Command, DatasetSnapshot, Method } from '../api/types'
 import { MessageList } from '../components/MessageList'
 import { useElementSize } from '../hooks/useElementSize'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
+import { AxisDragArea } from './AxisDragArea'
 import { InteractionLayer, type Mode } from './InteractionLayer'
 import { PlotContext, type PlotGeometry } from './plotContext'
 import { PlotToolbar } from './PlotToolbar'
@@ -12,7 +13,15 @@ import { dataPath, dataTransform } from './scale'
 import { SecondDerivativeCurve } from './SecondDerivativeCurve'
 import { useOverlays } from './useOverlays'
 import { useWheelZoom } from './useWheelZoom'
-import { fitToVisible, traceBounds, type Viewport } from './viewport'
+import {
+  fitToVisible,
+  followProportionally,
+  traceBounds,
+  type Domain,
+  type PlotView,
+  type SecondaryAxis,
+  type Viewport,
+} from './viewport'
 
 const HEIGHT = 380
 const MARGIN = { top: 16, right: 24, bottom: 48, left: 72 }
@@ -31,6 +40,10 @@ type Props = {
  * A dataset's trace with the analysis drawn over it and a toolbar above, filling the width of its
  * container. The plot zooms, pans, and under the Manual method adds and moves peaks. Under the
  * Curvature method it can also overlay the −y'' of the smoothed data, on an axis of its own.
+ *
+ * Zooming or panning the plot area moves −y'' along with the trace's y. Each axis can also be
+ * zoomed (scroll over it), panned (drag along it) and reset (double-click it) on its own; reset
+ * for the −y'' axis fits it to the part of the curve in view.
  *
  * The zoom starts fully out and is kept as the analysis changes; give the plot a new `key` to
  * start over.
@@ -54,13 +67,40 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
   const plotHeight = HEIGHT - margin.top - margin.bottom
 
   const { full, minSpan } = useMemo(() => traceBounds(dataset.trace), [dataset.trace])
-  const [view, setView] = useState<Viewport>(full)
+  const [view, setView] = useState<PlotView>({ ...full, y2: null })
+
+  // The whole −y'' curve's range, which its axis may pan and zoom out to.
+  const secondFull = useMemo(
+    () => overlays && fitToVisible(overlays.negativeSecondDerivative, [-Infinity, Infinity]),
+    [overlays],
+  )
+  const secondary = useMemo<SecondaryAxis | null>(
+    () => (showRightAxis && secondFull ? { full: secondFull, minSpan: (secondFull[1] - secondFull[0]) / 10000 } : null),
+    [showRightAxis, secondFull],
+  )
+
+  // −y'' spans the whole curve until the user first moves it. From then on it moves only as the
+  // user zooms and pans, and is kept as the curve is fetched again after an edit, so before and
+  // after can be compared at the same scale.
+  const secondView = view.y2 ?? secondFull
+
+  // A zoom box or pan in the plot area moves −y'' along with the trace's y, by the same proportion.
+  const changePlotView = useCallback(
+    (next: Viewport) =>
+      setView((current) => {
+        const y2 = current.y2 ?? secondFull
+        return { x: next.x, y: next.y, y2: y2 && followProportionally(current.y, next.y, y2) }
+      }),
+    [secondFull],
+  )
+  const changeAxis = (axis: 'x' | 'y' | 'y2', domain: Domain) => setView((current) => ({ ...current, [axis]: domain }))
 
   useWheelZoom(
     containerRef,
     { left: margin.left, top: margin.top, width: plotWidth, height: plotHeight },
     full,
     minSpan,
+    secondary,
     setView,
   )
 
@@ -72,14 +112,13 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
     [view, plotWidth, plotHeight],
   )
 
-  // Fitted to the part of −y'' in view, so zooming in on a small peak shows its curvature rather
-  // than leaving it flattened by the tallest peak elsewhere.
-  const secondDerivativeScale = useMemo(() => {
-    const visible = overlays && fitToVisible(overlays.negativeSecondDerivative, view.x)
-    return scaleLinear()
-      .domain(visible ?? [0, 1])
-      .range([plotHeight, 0])
-  }, [overlays, view.x, plotHeight])
+  const secondDerivativeScale = useMemo(
+    () =>
+      scaleLinear()
+        .domain(secondView ?? [0, 1])
+        .range([plotHeight, 0]),
+    [secondView, plotHeight],
+  )
 
   const plot = useMemo<PlotGeometry>(
     () => ({
@@ -135,6 +174,44 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
                     label={`−y″ (${dataset.yUnits}/${dataset.xUnits}²)`}
                   />
                 )}
+                <AxisDragArea
+                  orientation="bottom"
+                  x={0}
+                  y={plotHeight}
+                  width={plotWidth}
+                  height={margin.bottom}
+                  domain={view.x}
+                  full={full.x}
+                  onChange={(x) => changeAxis('x', x)}
+                  onReset={() => changeAxis('x', full.x)}
+                  title="Drag to pan x, scroll to zoom it, double-click to zoom it out"
+                />
+                <AxisDragArea
+                  orientation="left"
+                  x={-margin.left}
+                  y={0}
+                  width={margin.left}
+                  height={plotHeight}
+                  domain={view.y}
+                  full={full.y}
+                  onChange={(y) => changeAxis('y', y)}
+                  onReset={() => changeAxis('y', full.y)}
+                  title="Drag to pan y, scroll to zoom it, double-click to zoom it out"
+                />
+                {showRightAxis && secondView && secondFull && overlays && (
+                  <AxisDragArea
+                    orientation="right"
+                    x={plotWidth}
+                    y={0}
+                    width={margin.right}
+                    height={plotHeight}
+                    domain={secondView}
+                    full={secondFull}
+                    onChange={(y2) => changeAxis('y2', y2)}
+                    onReset={() => changeAxis('y2', fitToVisible(overlays.negativeSecondDerivative, view.x) ?? secondFull)}
+                    title="Drag to pan −y″, scroll to zoom it, double-click to fit it to the curve in view"
+                  />
+                )}
                 {/* Beneath the data, which lets the pointer through to it except at the handles
                     on editable peaks, so dragging a handle moves it and dragging elsewhere does
                     whatever the mode says. */}
@@ -144,7 +221,8 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
                   view={view}
                   full={full}
                   minSpan={minSpan}
-                  onViewChange={setView}
+                  onViewChange={changePlotView}
+                  onResetView={() => setView({ ...full, y2: secondFull })}
                   onAddPeak={(low, high) => onCommand({ kind: 'addManualPeak', low, high })}
                 />
                 <g clipPath="url(#plot-area)">

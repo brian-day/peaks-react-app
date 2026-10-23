@@ -77,30 +77,54 @@ export function zoomAbout(
   return fitWithin([anchor + (min - anchor) * spanScale, anchor + (max - anchor) * spanScale], full)
 }
 
+/** The region of data the plot shows, with the −y'' axis's range while that axis is shown. */
+export type PlotView = Viewport & { y2: Domain | null }
+
+/** How far the −y'' axis may zoom out, and in. */
+export type SecondaryAxis = { full: Domain; minSpan: number }
+
+/**
+ * Where `other` goes when `before` changes to `after`, moved by the same fraction of its own span.
+ *
+ * This is how −y'' follows the trace's y: zooming to the middle fifth of one zooms to the middle
+ * fifth of the other, whatever their units.
+ */
+export function followProportionally(before: Domain, after: Domain, other: Domain): Domain {
+  const scale = (other[1] - other[0]) / (before[1] - before[0])
+  return [other[0] + (after[0] - before[0]) * scale, other[1] + (after[1] - before[1]) * scale]
+}
+
 /**
  * Zooms the view for a scroll of `notches` (positive scrolls down, zooming out) with the pointer
  * at `fraction` of the way across the plot area, measured from its bottom-left corner.
  *
- * A pointer left of the plot area (over the y axis) zooms only y, and one below it (over the
- * x axis) zooms only x.
+ * Inside the plot area every axis zooms, −y'' along with y. Over an axis only that axis does:
+ * left of the plot area (the y axis) only y, below it (the x axis) only x, and right of it (the
+ * −y'' axis, when shown) only −y''.
  */
 export function wheelZoom(
-  view: Viewport,
+  view: PlotView,
   fraction: { x: number; y: number },
   notches: number,
   full: Viewport,
   minSpan: MinSpan,
-): Viewport {
+  secondary: SecondaryAxis | null,
+): PlotView {
   const spanScale = notches < 0 ? WHEEL_ZOOM_IN_FACTOR ** notches : WHEEL_ZOOM_OUT_FACTOR ** notches
-  const anchor = {
-    x: view.x[0] + fraction.x * (view.x[1] - view.x[0]),
-    y: view.y[0] + fraction.y * (view.y[1] - view.y[0]),
+  const zoom = (domain: Domain, at: number, fullDomain: Domain, min: number) =>
+    zoomAbout(domain, domain[0] + at * (domain[1] - domain[0]), spanScale, fullDomain, min)
+
+  // −y'' not yet moved by the user spans its whole curve.
+  const y2Before = view.y2 ?? secondary?.full ?? null
+
+  if (fraction.x > 1 && y2Before && secondary) {
+    return { ...view, y2: zoom(y2Before, fraction.y, secondary.full, secondary.minSpan) }
   }
 
-  return {
-    x: fraction.x >= 0 ? zoomAbout(view.x, anchor.x, spanScale, full.x, minSpan.x) : view.x,
-    y: fraction.y >= 0 ? zoomAbout(view.y, anchor.y, spanScale, full.y, minSpan.y) : view.y,
-  }
+  const x = fraction.x >= 0 ? zoom(view.x, fraction.x, full.x, minSpan.x) : view.x
+  const y = fraction.y >= 0 ? zoom(view.y, fraction.y, full.y, minSpan.y) : view.y
+  const insidePlot = fraction.x >= 0 && fraction.y >= 0
+  return { x, y, y2: y2Before && insidePlot ? followProportionally(view.y, y, y2Before) : y2Before }
 }
 
 // Room above and below a curve fitted to the view, so its extremes are not drawn on the edges.

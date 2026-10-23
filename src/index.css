@@ -222,6 +222,20 @@ body {
   cursor: ew-resize;
 }
 
+/* The strips over each axis that pan it on its own. */
+.axis-drag-area {
+  fill: transparent;
+  touch-action: none;
+}
+
+.axis-drag-area--horizontal {
+  cursor: ew-resize;
+}
+
+.axis-drag-area--vertical {
+  cursor: ns-resize;
+}
+
 .new-peak-band {
   fill: var(--peak);
   fill-opacity: 0.15;
