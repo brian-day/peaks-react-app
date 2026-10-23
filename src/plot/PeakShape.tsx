@@ -5,6 +5,8 @@ import { dataPath, dataTransform } from './scale'
 
 type Props = {
   peak: PeakView
+  /** Drawn more strongly, as the peak under the pointer is. */
+  highlighted: boolean
   /** Sends a manual peak's new boundary points, resolving once the analysis has been updated. */
   onMoveBoundaries: (peakId: number, low: Point, high: Point) => Promise<void>
 }
@@ -13,7 +15,7 @@ type Props = {
  * One peak: its area above the baseline, the baseline itself, and its boundary points, which can
  * be dragged when the peak is editable.
  */
-export function PeakShape({ peak, onMoveBoundaries }: Props) {
+export function PeakShape({ peak, highlighted, onMoveBoundaries }: Props) {
   const { xScale, yScale } = usePlot()
 
   // Both ends as they will be once a boundary drag is sent, held until the analysis comes back.
@@ -47,6 +49,7 @@ export function PeakShape({ peak, onMoveBoundaries }: Props) {
   if (peak.excluded) classes.push('peak--excluded')
   if (!peak.expected) classes.push('peak--unexpected')
   if (peak.isParent) classes.push('peak--parent')
+  if (highlighted) classes.push('peak--highlighted')
 
   return (
     <g className={classes.join(' ')}>

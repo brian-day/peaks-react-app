@@ -149,6 +149,10 @@ body {
   fill-opacity: 0.35;
 }
 
+.peak--highlighted .peak-area {
+  fill-opacity: 0.45;
+}
+
 .peak-label {
   fill: var(--text);
   font-size: 11px;

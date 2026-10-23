@@ -1,9 +1,11 @@
 import { scaleLinear } from 'd3-scale'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import type { Command, DatasetSnapshot, Method } from '../api/types'
+import { allPeaks, peakKey } from '../api/peakIdentity'
+import type { Command, DatasetSnapshot, Method, Point } from '../api/types'
 import { MessageList } from '../components/MessageList'
 import { useElementSize } from '../hooks/useElementSize'
 import { DetectionSettings } from '../settings/DetectionSettings'
+import { peakAt } from './hitTest'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
 import { AxisDragArea } from './AxisDragArea'
@@ -63,6 +65,15 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
   const { overlays, errors: overlayErrors } = useOverlays(sessionId, showSecondDerivative, dataset.analysis)
   const showRightAxis = showSecondDerivative && overlays !== null
   const margin = showRightAxis ? { ...MARGIN, right: RIGHT_AXIS_MARGIN } : MARGIN
+
+  // The peak under the pointer, highlighted. Found by position rather than by the peaks' own
+  // pointer events, since the peaks let the pointer through to the zoom and pan layer.
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null)
+  const peaks = useMemo(() => allPeaks(dataset.analysis), [dataset.analysis])
+  const hover = (point: Point | null) => {
+    const peak = point && peakAt(point, peaks)
+    setHoveredKey(peak ? peakKey(peak.id) : null)
+  }
 
   const [containerRef, { width }] = useElementSize<HTMLDivElement>()
   const svgRef = useRef<SVGSVGElement>(null)
@@ -238,10 +249,12 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
                   onViewChange={changePlotView}
                   onResetView={() => setView({ ...full, y2: secondFull })}
                   onAddPeak={(low, high) => onCommand({ kind: 'addManualPeak', low, high })}
+                  onHover={hover}
                 />
                 <g clipPath="url(#plot-area)">
                   <AnalysisLayer
                     analysis={dataset.analysis}
+                    hoveredKey={hoveredKey}
                     onMoveBoundaries={(peakId, low, high) =>
                       onCommand({ kind: 'updateManualPeak', peakId, low, high })
                     }

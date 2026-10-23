@@ -19,6 +19,8 @@ type Props = {
   /** Zooms all the way out; double-clicking does this. */
   onResetView: () => void
   onAddPeak: (low: number, high: number) => void
+  /** Where the pointer is over the plot, in data coordinates, or `null` once it is not. */
+  onHover: (point: Point | null) => void
 }
 
 type Drag =
@@ -43,6 +45,7 @@ export function InteractionLayer({
   onViewChange,
   onResetView,
   onAddPeak,
+  onHover,
 }: Props) {
   const { xScale, width, height, pointerToData } = usePlot()
   const [drag, setDrag] = useState<Drag | null>(null)
@@ -51,6 +54,8 @@ export function InteractionLayer({
 
   function onPointerDown(event: PointerEvent<SVGRectElement>) {
     if (event.button !== 0) return
+    // Whatever was under the pointer is not what a drag is about.
+    onHover(null)
     // Keep receiving this pointer's events even once it leaves the plot, until it is released.
     event.currentTarget.setPointerCapture(event.pointerId)
 
@@ -67,6 +72,7 @@ export function InteractionLayer({
   }
 
   function onPointerMove(event: PointerEvent<SVGRectElement>) {
+    if (!drag) onHover(pointerToData(event))
     switch (drag?.kind) {
       case 'zoomBox':
         return setDrag({ ...drag, end: toData(event) })
@@ -106,6 +112,7 @@ export function InteractionLayer({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={() => setDrag(null)}
+        onPointerLeave={() => onHover(null)}
         onDoubleClick={onResetView}
       />
       {drag?.kind === 'zoomBox' && <ZoomBox drag={drag} view={view} minSpan={minSpan} />}

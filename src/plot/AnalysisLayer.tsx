@@ -5,11 +5,13 @@ import { usePlot } from './plotContext'
 
 type Props = {
   analysis: AnalysisView
+  /** The {@link peakKey} of the peak under the pointer, drawn highlighted. */
+  hoveredKey: string | null
   onMoveBoundaries: (peakId: number, low: Point, high: Point) => Promise<void>
 }
 
 /** Draws whatever the analysis found: peaks directly, or thresholds with their peaks. */
-export function AnalysisLayer({ analysis, onMoveBoundaries }: Props) {
+export function AnalysisLayer({ analysis, hoveredKey, onMoveBoundaries }: Props) {
   const { xScale, yScale } = usePlot()
 
   switch (analysis.kind) {
@@ -17,7 +19,12 @@ export function AnalysisLayer({ analysis, onMoveBoundaries }: Props) {
       return (
         <g>
           {analysis.value.map((peak) => (
-            <PeakShape key={peakKey(peak.id)} peak={peak} onMoveBoundaries={onMoveBoundaries} />
+            <PeakShape
+                key={peakKey(peak.id)}
+                peak={peak}
+                highlighted={peakKey(peak.id) === hoveredKey}
+                onMoveBoundaries={onMoveBoundaries}
+              />
           ))}
         </g>
       )
@@ -35,7 +42,12 @@ export function AnalysisLayer({ analysis, onMoveBoundaries }: Props) {
                 y2={yScale(threshold.height)}
               />
               {threshold.peaks.map((peak) => (
-                <PeakShape key={peakKey(peak.id)} peak={peak} onMoveBoundaries={onMoveBoundaries} />
+                <PeakShape
+                key={peakKey(peak.id)}
+                peak={peak}
+                highlighted={peakKey(peak.id) === hoveredKey}
+                onMoveBoundaries={onMoveBoundaries}
+              />
               ))}
             </g>
           ))}
