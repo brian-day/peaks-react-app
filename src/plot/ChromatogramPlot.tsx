@@ -6,10 +6,10 @@ import { useElementSize } from '../hooks/useElementSize'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
 import { InteractionLayer, type Mode } from './InteractionLayer'
-import { OverlayLayer, type ShownOverlays } from './OverlayLayer'
 import { PlotContext, type PlotGeometry } from './plotContext'
 import { PlotToolbar } from './PlotToolbar'
 import { dataPath, dataTransform } from './scale'
+import { SecondDerivativeCurve } from './SecondDerivativeCurve'
 import { useOverlays } from './useOverlays'
 import { useWheelZoom } from './useWheelZoom'
 import { fitToVisible, traceBounds, type Viewport } from './viewport'
@@ -30,7 +30,7 @@ type Props = {
 /**
  * A dataset's trace with the analysis drawn over it and a toolbar above, filling the width of its
  * container. The plot zooms, pans, and under the Manual method adds and moves peaks. Under the
- * Curvature method it can also overlay the smoothed data and its −y'', on an axis of its own.
+ * Curvature method it can also overlay the −y'' of the smoothed data, on an axis of its own.
  *
  * The zoom starts fully out and is kept as the analysis changes; give the plot a new `key` to
  * start over.
@@ -40,20 +40,12 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
   // Switching away from Manual leaves nothing to add peaks to, so dragging zooms again.
   const mode = chosenMode === 'addPeak' && method !== 'Manual' ? 'zoom' : chosenMode
 
-  // The overlays only exist under Curvature. The choice is kept while another method is active,
-  // so they come back on returning to it.
-  const [chosenOverlays, setChosenOverlays] = useState<ShownOverlays>({ smoothed: false, secondDerivative: false })
-  const isCurvature = method === 'Curvature'
-  const shownOverlays: ShownOverlays = {
-    smoothed: isCurvature && chosenOverlays.smoothed,
-    secondDerivative: isCurvature && chosenOverlays.secondDerivative,
-  }
-  const { overlays, errors: overlayErrors } = useOverlays(
-    sessionId,
-    shownOverlays.smoothed || shownOverlays.secondDerivative,
-    dataset.analysis,
-  )
-  const showRightAxis = shownOverlays.secondDerivative && overlays !== null
+  // −y'' only exists under Curvature. The choice is kept while another method is active, so the
+  // curve comes back on returning to it.
+  const [chosenSecondDerivative, setChosenSecondDerivative] = useState(false)
+  const showSecondDerivative = method === 'Curvature' && chosenSecondDerivative
+  const { overlays, errors: overlayErrors } = useOverlays(sessionId, showSecondDerivative, dataset.analysis)
+  const showRightAxis = showSecondDerivative && overlays !== null
   const margin = showRightAxis ? { ...MARGIN, right: RIGHT_AXIS_MARGIN } : MARGIN
 
   const [containerRef, { width }] = useElementSize<HTMLDivElement>()
@@ -117,8 +109,8 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
         onMethodChange={(newMethod) => onCommand({ kind: 'setMethod', method: newMethod })}
         mode={mode}
         onModeChange={setMode}
-        overlays={chosenOverlays}
-        onOverlaysChange={setChosenOverlays}
+        secondDerivative={chosenSecondDerivative}
+        onSecondDerivativeChange={setChosenSecondDerivative}
       />
       <MessageList messages={overlayErrors} />
       <div ref={containerRef} className="plot">
@@ -163,11 +155,10 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
                     }
                   />
                   <path className="trace" d={tracePath} transform={dataTransform(xScale, yScale)} />
-                  {overlays && (
-                    <OverlayLayer
-                      overlays={overlays}
-                      shown={shownOverlays}
-                      secondDerivativeScale={secondDerivativeScale}
+                  {showSecondDerivative && overlays && (
+                    <SecondDerivativeCurve
+                      points={overlays.negativeSecondDerivative}
+                      scale={secondDerivativeScale}
                     />
                   )}
                 </g>

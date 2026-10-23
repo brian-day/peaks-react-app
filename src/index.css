@@ -11,7 +11,6 @@
   --excluded: #8c959f;
   --warning: #9a6700;
   --error: #cf222e;
-  --smoothed: #1a7f37;
   --second-derivative: #8250df;
 
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -164,22 +163,15 @@ body {
   stroke: var(--peak-unexpected);
 }
 
-/* Curvature overlays, drawn through a data-to-pixel transform like the trace. */
+/* The curvature method's −y'', drawn through a data-to-pixel transform like the trace. */
 
-.overlay {
+.second-derivative {
   fill: none;
+  stroke: var(--second-derivative);
+  stroke-opacity: 0.8;
   stroke-width: 1.25;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
-}
-
-.overlay--smoothed {
-  stroke: var(--smoothed);
-}
-
-.overlay--second-derivative {
-  stroke: var(--second-derivative);
-  stroke-opacity: 0.8;
 }
 
 .swatch {
@@ -191,11 +183,7 @@ body {
   border-radius: 2px;
 }
 
-.swatch--smoothed {
-  background: var(--smoothed);
-}
-
-.swatch--secondDerivative {
+.swatch--second-derivative {
   background: var(--second-derivative);
 }
 

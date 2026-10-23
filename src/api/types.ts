@@ -111,8 +111,6 @@ export type Command =
  * `peaks_server/src/overlays.rs`.
  */
 export type Overlays = {
-  /** The smoothed data the method detects peaks in, in the trace's units. */
-  smoothed: XY[]
   /** `[x, -y'']` of the smoothed data, whose bumps are the peaks. */
   negativeSecondDerivative: XY[]
 }
