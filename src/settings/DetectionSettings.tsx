@@ -14,8 +14,8 @@ const SMOOTHING_METHODS: { method: SmoothingMethod; label: string }[] = [
 ]
 
 /**
- * The Curvature method's peak detection settings, in the groups each reset covers. Every change
- * re-runs the detection, and the peaks, table and −y'' follow.
+ * The Curvature method's peak detection settings, grouped by the stage of detection they affect.
+ * Every change re-runs the detection, and the peaks, table and −y'' follow.
  */
 export function DetectionSettings({ settings, units, onCommand }: Props) {
   const s = settings
@@ -52,7 +52,6 @@ export function DetectionSettings({ settings, units, onCommand }: Props) {
               units={units.x}
               onCommit={(value) => onCommand({ kind: 'setSmoothing', value })}
             />
-            <AutoButton onClick={() => onCommand({ kind: 'setSmoothing', value: null })} />
           </div>
           <div className="setting">
             <NumberField
@@ -61,7 +60,6 @@ export function DetectionSettings({ settings, units, onCommand }: Props) {
               units={`${units.y}/${units.x}²`}
               onCommit={(value) => onCommand({ kind: 'setThresholdHeight', value })}
             />
-            <AutoButton onClick={() => onCommand({ kind: 'setThresholdHeight', value: null })} />
           </div>
           <div className="setting">
             <NumberField
@@ -77,13 +75,6 @@ export function DetectionSettings({ settings, units, onCommand }: Props) {
               onCommit={(end) => onCommand({ kind: 'setThresholdDomain', start: s.thresholdStart, end })}
             />
           </div>
-          <ResetButton
-            label="Reset all"
-            // dva_lib's detection reset returns every curvature setting to its default, not only
-            // this group's, so the button says so.
-            title="Return every detection, baseline and exclusion setting to its default"
-            onClick={() => onCommand({ kind: 'resetDetection' })}
-          />
         </fieldset>
 
         <fieldset>
@@ -106,7 +97,6 @@ export function DetectionSettings({ settings, units, onCommand }: Props) {
               }
             />
           </div>
-          <ResetButton label="Reset" onClick={() => onCommand({ kind: 'resetLiftOffTouchDown' })} />
         </fieldset>
 
         <fieldset>
@@ -125,25 +115,8 @@ export function DetectionSettings({ settings, units, onCommand }: Props) {
               onCommit={(height) => onCommand({ kind: 'setMinimumPeakSize', area: s.minArea, height })}
             />
           </div>
-          <ResetButton label="Reset" onClick={() => onCommand({ kind: 'resetMinimumPeakSize' })} />
         </fieldset>
       </div>
     </details>
-  )
-}
-
-function AutoButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button type="button" className="auto-button" title="Let the analysis choose this value" onClick={onClick}>
-      Auto
-    </button>
-  )
-}
-
-function ResetButton({ label, title, onClick }: { label: string; title?: string; onClick: () => void }) {
-  return (
-    <button type="button" className="reset-button" title={title} onClick={onClick}>
-      {label}
-    </button>
   )
 }

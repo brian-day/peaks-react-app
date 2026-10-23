@@ -483,14 +483,9 @@ body {
   outline-color: var(--error);
 }
 
-.detection-settings select,
-.detection-settings button {
+.detection-settings select {
   font: inherit;
   font-size: 0.85rem;
-}
-
-.detection-settings .reset-button {
-  align-self: flex-start;
 }
 
 /* Toolbar */
