@@ -1,4 +1,4 @@
-import type { ApiMessage, CreatedSession } from './types'
+import type { ApiMessage, Command, CommandResult, CreatedSession } from './types'
 
 /** A request that failed, with the messages explaining why. */
 export class ApiError extends Error {
@@ -11,23 +11,32 @@ export class ApiError extends Error {
 }
 
 /** Downloads and analyzes an `Object[Data, Chromatography]`, starting a session for it. */
-export async function createSession(objectId: string): Promise<CreatedSession> {
-  const response = await fetch('/api/sessions', {
+export function createSession(objectId: string): Promise<CreatedSession> {
+  return post('/api/sessions', { objectId })
+}
+
+/** Applies one edit to a session's analysis. */
+export function applyCommand(sessionId: string, command: Command): Promise<CommandResult> {
+  return post(`/api/sessions/${sessionId}/commands`, command)
+}
+
+async function post<T>(url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ objectId }),
+    body: JSON.stringify(body),
   })
 
   if (response.ok) {
     return response.json()
   }
 
-  // 422 means the analysis itself failed, and the server says why.
-  if (response.status === 422) {
-    const body: { messages: ApiMessage[] } = await response.json()
-    throw new ApiError(body.messages)
+  // peaks_server explains every error as `{ messages }`. Anything else means something other
+  // than peaks_server answered, most likely Vite's proxy because the server is not running.
+  const errorBody: { messages?: ApiMessage[] } | null = await response.json().catch(() => null)
+  if (errorBody?.messages) {
+    throw new ApiError(errorBody.messages)
   }
-
   throw new ApiError([
     {
       level: 'Error',

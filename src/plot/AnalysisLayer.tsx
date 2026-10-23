@@ -1,21 +1,22 @@
-import type { AnalysisView, PeakIdentity } from '../api/types'
+import type { AnalysisView, PeakIdentity, Point } from '../api/types'
 import { PeakShape } from './PeakShape'
-import type { Scale } from './scale'
+import { usePlot } from './plotContext'
 
 type Props = {
   analysis: AnalysisView
-  xScale: Scale
-  yScale: Scale
+  onMoveBoundaries: (peakId: number, low: Point, high: Point) => Promise<void>
 }
 
 /** Draws whatever the analysis found: peaks directly, or thresholds with their peaks. */
-export function AnalysisLayer({ analysis, xScale, yScale }: Props) {
+export function AnalysisLayer({ analysis, onMoveBoundaries }: Props) {
+  const { xScale, yScale } = usePlot()
+
   switch (analysis.kind) {
     case 'Peaks':
       return (
         <g>
           {analysis.value.map((peak) => (
-            <PeakShape key={peakKey(peak.id)} peak={peak} xScale={xScale} yScale={yScale} />
+            <PeakShape key={peakKey(peak.id)} peak={peak} onMoveBoundaries={onMoveBoundaries} />
           ))}
         </g>
       )
@@ -33,7 +34,7 @@ export function AnalysisLayer({ analysis, xScale, yScale }: Props) {
                 y2={yScale(threshold.height)}
               />
               {threshold.peaks.map((peak) => (
-                <PeakShape key={peakKey(peak.id)} peak={peak} xScale={xScale} yScale={yScale} />
+                <PeakShape key={peakKey(peak.id)} peak={peak} onMoveBoundaries={onMoveBoundaries} />
               ))}
             </g>
           ))}

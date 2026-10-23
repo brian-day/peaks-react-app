@@ -66,3 +66,14 @@ export type CreatedSession = {
   messages: ApiMessage[]
   dataset: DatasetSnapshot
 }
+
+export type Method = 'Manual' | 'Threshold' | 'Curvature'
+
+/** An edit to a session's analysis, mirroring DVA's `peaks_server/src/commands.rs`. */
+export type Command =
+  | { kind: 'setMethod'; method: Method }
+  | { kind: 'addManualPeak'; low: number; high: number }
+  | { kind: 'updateManualPeak'; peakId: number; low: Point; high: Point }
+
+/** The analysis after an edit. */
+export type CommandResult = { analysis: AnalysisView }

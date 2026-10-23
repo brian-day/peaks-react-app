@@ -162,17 +162,118 @@ body {
   stroke: var(--peak-unexpected);
 }
 
-/* Zooming and panning */
+/* Interaction */
 
-.zoom-pan-layer {
+/* The data is drawn over the interaction layer but lets the pointer through to it, so a drag
+   anywhere but a peak's handle zooms, pans or adds a peak. */
+.trace,
+.peak-area,
+.peak-baseline,
+.peak-boundary,
+.peak-label,
+.threshold {
+  pointer-events: none;
+}
+
+.interaction-layer {
   fill: transparent;
-  cursor: crosshair;
-  /* Pointer drags zoom and pan the plot rather than scroll or zoom the page on touch screens. */
+  /* Pointer drags act on the plot rather than scroll or zoom the page on touch screens. */
   touch-action: none;
 }
 
-.zoom-pan-layer--panning {
+.interaction-layer--zoom {
+  cursor: crosshair;
+}
+
+.interaction-layer--pan {
+  cursor: grab;
+}
+
+.interaction-layer--panning {
   cursor: grabbing;
+}
+
+.interaction-layer--addPeak {
+  cursor: ew-resize;
+}
+
+.new-peak-band {
+  fill: var(--peak);
+  fill-opacity: 0.15;
+  stroke: var(--peak);
+  stroke-dasharray: 4 3;
+  pointer-events: none;
+}
+
+.peak-handle {
+  fill: var(--surface);
+  stroke: var(--color);
+  stroke-width: 2;
+  cursor: move;
+  touch-action: none;
+}
+
+.peak-handle:hover,
+.peak-handle--dragging {
+  fill: var(--color);
+}
+
+/* Toolbar */
+
+.plot-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plot-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+}
+
+.button-group-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-right: 8px;
+}
+
+.button-group button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.button-group button + button {
+  border-left: none;
+}
+
+.button-group button:first-of-type {
+  border-radius: 6px 0 0 6px;
+}
+
+.button-group button:last-of-type {
+  border-radius: 0 6px 6px 0;
+}
+
+.button-group button[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+}
+
+.button-group button:disabled {
+  color: var(--excluded);
+  cursor: not-allowed;
 }
 
 .zoom-box {

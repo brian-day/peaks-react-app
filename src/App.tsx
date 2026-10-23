@@ -1,10 +1,10 @@
 import { MessageList } from './components/MessageList'
 import { ObjectIdForm } from './components/ObjectIdForm'
-import { useCreateSession } from './hooks/useCreateSession'
+import { useSession } from './hooks/useSession'
 import { ChromatogramPlot } from './plot/ChromatogramPlot'
 
 function App() {
-  const { state, create } = useCreateSession()
+  const { state, create, sendCommand } = useSession()
 
   return (
     <main className="app">
@@ -15,9 +15,14 @@ function App() {
       {state.status === 'failed' && <MessageList messages={state.messages} />}
       {state.status === 'loaded' && (
         <>
-          <MessageList messages={state.session.messages} />
+          <MessageList messages={[...state.session.messages, ...state.commandErrors]} />
           {/* A new key per session gives each one a fresh plot, so a new analysis starts zoomed out. */}
-          <ChromatogramPlot key={state.session.sessionId} dataset={state.session.dataset} />
+          <ChromatogramPlot
+            key={state.session.sessionId}
+            dataset={state.session.dataset}
+            method={state.method}
+            onCommand={sendCommand}
+          />
         </>
       )}
     </main>

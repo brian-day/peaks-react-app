@@ -1,0 +1,57 @@
+import type { Method } from '../api/types'
+import type { Mode } from './InteractionLayer'
+
+// Threshold is left out until the app can create thresholds; switching to it would show nothing.
+const METHODS: Method[] = ['Curvature', 'Manual']
+
+const MODES: { mode: Mode; label: string; hint: string }[] = [
+  { mode: 'zoom', label: 'Zoom', hint: 'Drag a box to zoom in; double-click to zoom out' },
+  { mode: 'pan', label: 'Pan', hint: 'Drag to pan, or hold Shift in any mode' },
+  { mode: 'addPeak', label: 'Add peak', hint: 'Drag across a peak to add it, or hold Alt (Option) in any mode' },
+]
+
+type Props = {
+  method: Method
+  onMethodChange: (method: Method) => void
+  mode: Mode
+  onModeChange: (mode: Mode) => void
+}
+
+/** Chooses the peak-picking method, and what dragging across the plot does. */
+export function PlotToolbar({ method, onMethodChange, mode, onModeChange }: Props) {
+  return (
+    <div className="plot-toolbar">
+      <ButtonGroup label="Method">
+        {METHODS.map((m) => (
+          <button key={m} type="button" aria-pressed={m === method} onClick={() => onMethodChange(m)}>
+            {m}
+          </button>
+        ))}
+      </ButtonGroup>
+      <ButtonGroup label="Drag to">
+        {MODES.map(({ mode: m, label, hint }) => (
+          <button
+            key={m}
+            type="button"
+            title={hint}
+            aria-pressed={m === mode}
+            // Adding peaks only means something under the Manual method.
+            disabled={m === 'addPeak' && method !== 'Manual'}
+            onClick={() => onModeChange(m)}
+          >
+            {label}
+          </button>
+        ))}
+      </ButtonGroup>
+    </div>
+  )
+}
+
+function ButtonGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="button-group" role="group" aria-label={label}>
+      <span className="button-group-label">{label}</span>
+      {children}
+    </div>
+  )
+}
