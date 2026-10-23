@@ -20,6 +20,7 @@ import {
   type Domain,
   type PlotView,
   type SecondaryAxis,
+  UNBOUNDED,
   type Viewport,
 } from './viewport'
 
@@ -69,13 +70,13 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
   const { full, minSpan } = useMemo(() => traceBounds(dataset.trace), [dataset.trace])
   const [view, setView] = useState<PlotView>({ ...full, y2: null })
 
-  // The whole −y'' curve's range, which its axis may pan and zoom out to.
+  // The whole −y'' curve's range: where its axis starts and is reset to, though not a limit on it.
   const secondFull = useMemo(
     () => overlays && fitToVisible(overlays.negativeSecondDerivative, [-Infinity, Infinity]),
     [overlays],
   )
   const secondary = useMemo<SecondaryAxis | null>(
-    () => (showRightAxis && secondFull ? { full: secondFull, minSpan: (secondFull[1] - secondFull[0]) / 10000 } : null),
+    () => (showRightAxis && secondFull ? { whole: secondFull, minSpan: (secondFull[1] - secondFull[0]) / 10000 } : null),
     [showRightAxis, secondFull],
   )
 
@@ -206,7 +207,7 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
                     width={margin.right}
                     height={plotHeight}
                     domain={secondView}
-                    full={secondFull}
+                    full={UNBOUNDED}
                     onChange={(y2) => changeAxis('y2', y2)}
                     onReset={() => changeAxis('y2', fitToVisible(overlays.negativeSecondDerivative, view.x) ?? secondFull)}
                     title="Drag to pan −y″, scroll to zoom it, double-click to fit it to the curve in view"

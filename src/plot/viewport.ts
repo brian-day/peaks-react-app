@@ -80,8 +80,19 @@ export function zoomAbout(
 /** The region of data the plot shows, with the −y'' axis's range while that axis is shown. */
 export type PlotView = Viewport & { y2: Domain | null }
 
-/** How far the −y'' axis may zoom out, and in. */
-export type SecondaryAxis = { full: Domain; minSpan: number }
+/**
+ * A range with no edges, for an axis that may pan and zoom out as far as the user likes.
+ *
+ * The −y'' axis is one: only its positive part usually matters, and lining up its zero with the
+ * trace's needs it to go past the curve's own range.
+ */
+export const UNBOUNDED: Domain = [-Infinity, Infinity]
+
+/**
+ * The −y'' axis while it is shown: the whole curve's range, which the axis spans until the user
+ * moves it but does not limit it, and the narrowest span it will zoom in to.
+ */
+export type SecondaryAxis = { whole: Domain; minSpan: number }
 
 /**
  * Where `other` goes when `before` changes to `after`, moved by the same fraction of its own span.
@@ -115,10 +126,10 @@ export function wheelZoom(
     zoomAbout(domain, domain[0] + at * (domain[1] - domain[0]), spanScale, fullDomain, min)
 
   // −y'' not yet moved by the user spans its whole curve.
-  const y2Before = view.y2 ?? secondary?.full ?? null
+  const y2Before = view.y2 ?? secondary?.whole ?? null
 
   if (fraction.x > 1 && y2Before && secondary) {
-    return { ...view, y2: zoom(y2Before, fraction.y, secondary.full, secondary.minSpan) }
+    return { ...view, y2: zoom(y2Before, fraction.y, UNBOUNDED, secondary.minSpan) }
   }
 
   const x = fraction.x >= 0 ? zoom(view.x, fraction.x, full.x, minSpan.x) : view.x

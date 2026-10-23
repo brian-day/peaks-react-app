@@ -6,6 +6,7 @@ import {
   followProportionally,
   pan,
   traceBounds,
+  UNBOUNDED,
   wheelZoom,
   zoomAbout,
   zoomBoxOutcome,
@@ -41,6 +42,16 @@ describe('pan', () => {
 
   it('stops at the high edge, keeping the span', () => {
     expect(pan([80, 90], 15, [0, 100])).toEqual([90, 100])
+  })
+})
+
+describe('UNBOUNDED', () => {
+  it('lets a domain pan any distance', () => {
+    expect(pan([0, 100], -1e6, UNBOUNDED)).toEqual([-1e6, -999900])
+  })
+
+  it('lets a domain widen any amount', () => {
+    expect(fitWithin([-1e9, 1e9], UNBOUNDED)).toEqual([-1e9, 1e9])
   })
 })
 
@@ -111,7 +122,7 @@ describe('wheelZoom', () => {
 
   describe('with the −y″ axis shown', () => {
     const withSecondary = { x: [20, 60], y: [2, 6], y2: [0, 100] } as const
-    const secondary = { full: [-500, 500] as const, minSpan: 1 }
+    const secondary = { whole: [-500, 500] as const, minSpan: 1 }
 
     it('zooms −y″ in proportion with y inside the plot', () => {
       const zoomed = wheelZoom(withSecondary, { x: 0.5, y: 0.5 }, 1, full, minSpan, secondary)
@@ -134,6 +145,13 @@ describe('wheelZoom', () => {
       const zoomed = wheelZoom(unmoved, { x: 0.5, y: 0.5 }, 1, full, minSpan, secondary)
       // The whole range, [-500, 500], zoomed out by 1.2 about its middle along with y. Following
       // y keeps the two in step, so −y″ is not held within its whole range as y is within its own.
+      expect(zoomed.y2?.[0]).toBeCloseTo(-600)
+      expect(zoomed.y2?.[1]).toBeCloseTo(600)
+    })
+
+    it('zooms −y″ out past its whole range over its axis, since it has no limits', () => {
+      const atWhole = { x: [20, 60], y: [2, 6], y2: [-500, 500] } as const
+      const zoomed = wheelZoom(atWhole, { x: 1.1, y: 0.5 }, 1, full, minSpan, secondary)
       expect(zoomed.y2?.[0]).toBeCloseTo(-600)
       expect(zoomed.y2?.[1]).toBeCloseTo(600)
     })
