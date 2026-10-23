@@ -15,19 +15,23 @@ type Props = {
   onMethodChange: (method: Method) => void
   mode: Mode
   onModeChange: (mode: Mode) => void
+  trace: boolean
+  onTraceChange: (shown: boolean) => void
   secondDerivative: boolean
   onSecondDerivativeChange: (shown: boolean) => void
 }
 
 /**
- * Chooses the peak-picking method, what dragging across the plot does, and under the Curvature
- * method whether −y'' is drawn.
+ * Chooses the peak-picking method, what dragging across the plot does, and which curves are
+ * drawn: the trace, and under the Curvature method −y''.
  */
 export function PlotToolbar({
   method,
   onMethodChange,
   mode,
   onModeChange,
+  trace,
+  onTraceChange,
   secondDerivative,
   onSecondDerivativeChange,
 }: Props) {
@@ -55,20 +59,29 @@ export function PlotToolbar({
           </button>
         ))}
       </ButtonGroup>
-      {method === 'Curvature' && (
-        <ButtonGroup label="Show">
+      <ButtonGroup label="Show">
+        {/* Each swatch doubles as its curve's legend. */}
+        <button
+          type="button"
+          title="The data and the peaks found in it; the table still lists the peaks while they are hidden"
+          aria-pressed={trace}
+          onClick={() => onTraceChange(!trace)}
+        >
+          <span className="swatch swatch--trace" aria-hidden="true" />
+          Trace
+        </button>
+        {method === 'Curvature' && (
           <button
             type="button"
             title="The negative second derivative of the smoothed data, on the right-hand axis; its bumps are the peaks"
             aria-pressed={secondDerivative}
             onClick={() => onSecondDerivativeChange(!secondDerivative)}
           >
-            {/* The swatch doubles as the curve's legend. */}
             <span className="swatch swatch--second-derivative" aria-hidden="true" />
             −y″
           </button>
-        </ButtonGroup>
-      )}
+        )}
+      </ButtonGroup>
     </div>
   )
 }

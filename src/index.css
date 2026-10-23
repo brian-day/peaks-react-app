@@ -227,6 +227,10 @@ body {
   border-radius: 2px;
 }
 
+.swatch--trace {
+  background: var(--trace);
+}
+
 .swatch--second-derivative {
   background: var(--second-derivative);
 }

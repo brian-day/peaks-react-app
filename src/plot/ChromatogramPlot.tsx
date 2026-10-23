@@ -65,6 +65,9 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
   // −y'' only exists under Curvature. The choice is kept while another method is active, so the
   // curve comes back on returning to it.
   const [chosenSecondDerivative, setChosenSecondDerivative] = useState(false)
+  // Hiding the trace hides the peaks drawn on it too, leaving −y'' and its threshold to read on
+  // their own. The table still lists the peaks.
+  const [showTrace, setShowTrace] = useState(true)
   const showSecondDerivative = method === 'Curvature' && chosenSecondDerivative
   const { overlays, errors: overlayErrors } = useOverlays(sessionId, showSecondDerivative, dataset.analysis)
   const showRightAxis = showSecondDerivative && overlays !== null
@@ -74,7 +77,8 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
   // since the peaks let the pointer through to the zoom and pan layer.
   const peaks = useMemo(() => allPeaks(dataset.analysis), [dataset.analysis])
   const hover = (point: Point | null) => {
-    const peak = point && peakAt(point, peaks)
+    // Peaks that are not drawn cannot be under the pointer.
+    const peak = point && showTrace ? peakAt(point, peaks) : null
     onHoverPeak(peak ? peakKey(peak.id) : null)
   }
 
@@ -169,6 +173,8 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
         onMethodChange={(newMethod) => onCommand({ kind: 'setMethod', method: newMethod })}
         mode={mode}
         onModeChange={setMode}
+        trace={showTrace}
+        onTraceChange={setShowTrace}
         secondDerivative={chosenSecondDerivative}
         onSecondDerivativeChange={setChosenSecondDerivative}
       />
@@ -255,14 +261,18 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
                   onHover={hover}
                 />
                 <g clipPath="url(#plot-area)">
-                  <AnalysisLayer
-                    analysis={dataset.analysis}
-                    hoveredKey={hoveredKey}
-                    onMoveBoundaries={(peakId, low, high) =>
-                      onCommand({ kind: 'updateManualPeak', peakId, low, high })
-                    }
-                  />
-                  <path className="trace" d={tracePath} transform={dataTransform(xScale, yScale)} />
+                  {showTrace && (
+                    <AnalysisLayer
+                      analysis={dataset.analysis}
+                      hoveredKey={hoveredKey}
+                      onMoveBoundaries={(peakId, low, high) =>
+                        onCommand({ kind: 'updateManualPeak', peakId, low, high })
+                      }
+                    />
+                  )}
+                  {showTrace && (
+                    <path className="trace" d={tracePath} transform={dataTransform(xScale, yScale)} />
+                  )}
                   {showSecondDerivative && overlays && (
                     <SecondDerivativeCurve
                       points={overlays.negativeSecondDerivative}
