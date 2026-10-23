@@ -1,5 +1,6 @@
 import { useMemo, useState, type PointerEvent } from 'react'
-import type { PeakView, Point } from '../api/types'
+import type { CurvatureBoundaryType, PeakView, Point } from '../api/types'
+import { boundaryMarkerPath, disc, MARKER_RADIUS } from './markers'
 import { usePlot } from './plotContext'
 import { dataPath, dataTransform } from './scale'
 
@@ -12,8 +13,9 @@ type Props = {
 }
 
 /**
- * One peak: its area above the baseline, the baseline itself, and its boundary points, which can
- * be dragged when the peak is editable.
+ * One peak: its area above the baseline, the baseline itself, a marker at its apex, and its
+ * boundary points, each marked by how that end meets its neighbour, or dragged when the peak is
+ * editable.
  */
 export function PeakShape({ peak, highlighted, onMoveBoundaries }: Props) {
   const { xScale, yScale } = usePlot()
@@ -61,10 +63,11 @@ export function PeakShape({ peak, highlighted, onMoveBoundaries }: Props) {
         x2={xScale(high.x)}
         y2={yScale(high.y)}
       />
+      <path className="peak-apex" d={disc(xScale(peak.apex.x), yScale(peak.apex.y), MARKER_RADIUS)} />
       {editableId === null ? (
         <>
-          <circle className="peak-boundary" cx={xScale(low.x)} cy={yScale(low.y)} r={3} />
-          <circle className="peak-boundary" cx={xScale(high.x)} cy={yScale(high.y)} r={3} />
+          <BoundaryMarker type={peak.low.integrationType} x={xScale(low.x)} y={yScale(low.y)} />
+          <BoundaryMarker type={peak.high.integrationType} x={xScale(high.x)} y={yScale(high.y)} />
         </>
       ) : (
         <>
@@ -78,6 +81,22 @@ export function PeakShape({ peak, highlighted, onMoveBoundaries }: Props) {
         </text>
       )}
     </g>
+  )
+}
+
+const BOUNDARY_NAMES: Record<CurvatureBoundaryType, string> = {
+  Baseline: 'Baseline boundary',
+  Valley: 'Valley boundary',
+  Shoulder: 'Shoulder boundary',
+  Round: 'Round boundary',
+}
+
+/** A boundary drawn in the shape of its integration type, named on hover. */
+function BoundaryMarker({ type, x, y }: { type: CurvatureBoundaryType | null; x: number; y: number }) {
+  return (
+    <path className="peak-boundary" d={boundaryMarkerPath(type, x, y)}>
+      {type && <title>{BOUNDARY_NAMES[type]}</title>}
+    </path>
   )
 }
 

@@ -139,10 +139,12 @@ body {
   stroke-dasharray: 4 3;
 }
 
+/* The apex and end markers are solid in the peak's color, outlined so they stand off the trace. */
+.peak-apex,
 .peak-boundary {
-  fill: var(--surface);
-  stroke: var(--color);
-  stroke-width: 1.5;
+  fill: var(--color);
+  stroke: var(--surface);
+  stroke-width: 1;
 }
 
 .peak--parent .peak-area {
@@ -236,7 +238,7 @@ body {
 .trace,
 .peak-area,
 .peak-baseline,
-.peak-boundary,
+.peak-apex,
 .peak-label,
 .threshold {
   pointer-events: none;
