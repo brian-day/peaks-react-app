@@ -420,7 +420,15 @@ body {
 
 /* Detection settings */
 
-.detection-settings {
+.detection-settings summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  user-select: none;
+}
+
+.detection-settings-groups {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
