@@ -2,6 +2,7 @@
 // from peaks_server; nothing here computes a peak property.
 
 import type { CellValue, ColumnKey, CurvatureBoundaryType } from '../api/types'
+import { formatNumber } from '../format'
 
 /** The data's axis units, which most columns' units derive from. */
 export type AxisUnits = { x: string; y: string }
@@ -107,17 +108,10 @@ const BOUNDARY_LETTERS: Record<CurvatureBoundaryType, string> = {
   Round: 'R',
 }
 
-// Four significant figures reads well for most values; at 1000 and above that would round away
-// digits before the decimal point, so those keep every whole digit instead.
-const SMALL_NUMBER = new Intl.NumberFormat('en-US', { maximumSignificantDigits: 4 })
-const LARGE_NUMBER = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
-
 /** A cell's value as it appears in the table. */
 export function formatCell(value: CellValue): string {
   if (value === null) return '–'
   if (typeof value === 'string') return value
-  if (typeof value === 'number') {
-    return (Math.abs(value) >= 1000 ? LARGE_NUMBER : SMALL_NUMBER).format(value)
-  }
+  if (typeof value === 'number') return formatNumber(value)
   return BOUNDARY_LETTERS[value.low] + BOUNDARY_LETTERS[value.high]
 }

@@ -366,6 +366,73 @@ body {
   font-size: 0.85rem;
 }
 
+/* Detection settings */
+
+.detection-settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.detection-settings fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 12px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.detection-settings legend {
+  padding: 0 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.detection-settings .setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detection-settings label,
+.detection-settings .units {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.number-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.number-field input {
+  font: inherit;
+  font-size: 0.9rem;
+  width: 8ch;
+  padding: 2px 6px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.number-field input[aria-invalid='true'] {
+  border-color: var(--error);
+  outline-color: var(--error);
+}
+
+.detection-settings select,
+.detection-settings button {
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.detection-settings .reset-button {
+  align-self: flex-start;
+}
+
 /* Toolbar */
 
 .plot-panel {

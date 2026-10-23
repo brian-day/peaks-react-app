@@ -3,6 +3,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import type { Command, DatasetSnapshot, Method } from '../api/types'
 import { MessageList } from '../components/MessageList'
 import { useElementSize } from '../hooks/useElementSize'
+import { DetectionSettings } from '../settings/DetectionSettings'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
 import { AxisDragArea } from './AxisDragArea'
@@ -152,6 +153,13 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand }: Prop
         secondDerivative={chosenSecondDerivative}
         onSecondDerivativeChange={setChosenSecondDerivative}
       />
+      {method === 'Curvature' && dataset.curvatureSettings && (
+        <DetectionSettings
+          settings={dataset.curvatureSettings}
+          units={{ x: dataset.xUnits, y: dataset.yUnits }}
+          onCommand={onCommand}
+        />
+      )}
       <MessageList messages={overlayErrors} />
       <div ref={containerRef} className="plot">
         {/* Nothing to draw until the container has been measured. */}

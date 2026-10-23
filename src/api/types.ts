@@ -59,6 +59,30 @@ export type DatasetSnapshot = {
   trace: XY[]
   analysis: AnalysisView
   table: PeakRow[]
+  /** `null` unless the Curvature method is active. */
+  curvatureSettings: CurvatureSettings | null
+}
+
+export type SmoothingMethod = 'Gaussian' | 'SavitzkyGolay'
+
+/**
+ * The Curvature method's peak detection settings in effect, for its first domain, mirroring DVA's
+ * `peaks_server/src/settings.rs`. An automatic setting shows the value it resolved to.
+ */
+export type CurvatureSettings = {
+  smoothingMethod: SmoothingMethod
+  /** The smoothing filter's width in x units: the Gaussian's sigma, or the Savitzky–Golay window. */
+  smoothing: number
+  /** The −y'' above which a peak's apex is looked for. */
+  thresholdHeight: number
+  /** The x range the threshold applies over. */
+  thresholdStart: number
+  thresholdEnd: number
+  liftOffPercent: number
+  touchDownPercent: number
+  /** Peaks with less area, or less height, than these are excluded. */
+  minArea: number
+  minHeight: number
 }
 
 /** The table's columns, mirroring DVA's `peaks_server/src/table.rs`. */
@@ -105,6 +129,16 @@ export type Command =
   | { kind: 'setMethod'; method: Method }
   | { kind: 'addManualPeak'; low: number; high: number }
   | { kind: 'updateManualPeak'; peakId: number; low: Point; high: Point }
+  // The Curvature method's detection settings. A `null` value lets the analysis choose it.
+  | { kind: 'setSmoothingMethod'; method: SmoothingMethod }
+  | { kind: 'setSmoothing'; value: number | null }
+  | { kind: 'setThresholdHeight'; value: number | null }
+  | { kind: 'setThresholdDomain'; start: number; end: number }
+  | { kind: 'setLiftOffTouchDown'; liftOffPercent: number; touchDownPercent: number }
+  | { kind: 'setMinimumPeakSize'; area: number; height: number }
+  | { kind: 'resetDetection' }
+  | { kind: 'resetLiftOffTouchDown' }
+  | { kind: 'resetMinimumPeakSize' }
 
 /**
  * Curves drawn over the trace under the Curvature method, mirroring DVA's
@@ -115,5 +149,9 @@ export type Overlays = {
   negativeSecondDerivative: XY[]
 }
 
-/** The analysis and its table after an edit. */
-export type CommandResult = { analysis: AnalysisView; table: PeakRow[] }
+/** The analysis, its table and its detection settings after an edit. */
+export type CommandResult = {
+  analysis: AnalysisView
+  table: PeakRow[]
+  curvatureSettings: CurvatureSettings | null
+}
