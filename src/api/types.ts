@@ -55,9 +55,40 @@ export type ApiMessage = { level: 'Warning' | 'Error'; message: string }
 export type DatasetSnapshot = {
   xUnits: string
   yUnits: string
-  /** The downsampled trace. */
+  /** The trace: every point, or about 100k of them if it has more. */
   trace: XY[]
   analysis: AnalysisView
+  table: PeakRow[]
+}
+
+/** The table's columns, mirroring DVA's `peaks_server/src/table.rs`. */
+export type ColumnKey =
+  | 'position'
+  | 'height'
+  | 'area'
+  | 'percentArea'
+  | 'relativeArea'
+  | 'relativePosition'
+  | 'tailFactor'
+  | 'snr'
+  | 'integrationType'
+  | 'peakStart'
+  | 'peakEnd'
+  | 'widthAtHalfHeight'
+  | 'uspResolution'
+  | 'theoreticalPlateNumber'
+  | 'peakToValleyStart'
+  | 'peakToValleyEnd'
+
+/** A column's value for one peak; `null` when the column does not apply to it. */
+export type CellValue = number | string | { low: CurvatureBoundaryType; high: CurvatureBoundaryType } | null
+
+/** One peak's row of the table. */
+export type PeakRow = {
+  /** The same identity the peak has in the analysis view. */
+  id: PeakIdentity
+  kind: 'included' | 'excluded' | 'unexpected'
+  values: Record<ColumnKey, CellValue>
 }
 
 export type CreatedSession = {
@@ -75,5 +106,5 @@ export type Command =
   | { kind: 'addManualPeak'; low: number; high: number }
   | { kind: 'updateManualPeak'; peakId: number; low: Point; high: Point }
 
-/** The analysis after an edit. */
-export type CommandResult = { analysis: AnalysisView }
+/** The analysis and its table after an edit. */
+export type CommandResult = { analysis: AnalysisView; table: PeakRow[] }

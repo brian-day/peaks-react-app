@@ -1,4 +1,5 @@
-import type { AnalysisView, PeakIdentity, Point } from '../api/types'
+import { peakKey } from '../api/peakIdentity'
+import type { AnalysisView, Point } from '../api/types'
 import { PeakShape } from './PeakShape'
 import { usePlot } from './plotContext'
 
@@ -41,8 +42,4 @@ export function AnalysisLayer({ analysis, onMoveBoundaries }: Props) {
         </g>
       )
   }
-}
-
-function peakKey(id: PeakIdentity): string {
-  return id.kind === 'Peak' ? `${id.value}` : `${id.value[0]}-${id.value[1]}`
 }

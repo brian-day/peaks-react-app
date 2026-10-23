@@ -41,12 +41,12 @@ export function useSession() {
       // Each update checks the session is still the one the edit was sent to, in case a new
       // analysis was started while the edit was on its way.
       try {
-        const { analysis } = await applyCommand(sessionId, command)
+        const { analysis, table } = await applyCommand(sessionId, command)
         setState((current) =>
           current.status === 'loaded' && current.session.sessionId === sessionId
             ? {
                 ...current,
-                session: { ...current.session, dataset: { ...current.session.dataset, analysis } },
+                session: { ...current.session, dataset: { ...current.session.dataset, analysis, table } },
                 method: command.kind === 'setMethod' ? command.method : current.method,
                 commandErrors: [],
               }

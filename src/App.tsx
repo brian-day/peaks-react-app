@@ -2,6 +2,7 @@ import { MessageList } from './components/MessageList'
 import { ObjectIdForm } from './components/ObjectIdForm'
 import { useSession } from './hooks/useSession'
 import { ChromatogramPlot } from './plot/ChromatogramPlot'
+import { PeaksTable } from './table/PeaksTable'
 
 function App() {
   const { state, create, sendCommand } = useSession()
@@ -22,6 +23,12 @@ function App() {
             dataset={state.session.dataset}
             method={state.method}
             onCommand={sendCommand}
+          />
+          {/* No per-session key here: the chosen columns carry over to the next analysis. */}
+          <PeaksTable
+            rows={state.session.dataset.table}
+            analysis={state.session.dataset.analysis}
+            units={{ x: state.session.dataset.xUnits, y: state.session.dataset.yUnits }}
           />
         </>
       )}
