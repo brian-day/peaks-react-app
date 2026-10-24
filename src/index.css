@@ -677,7 +677,8 @@ select {
 .plot-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  /* Groups that wrap onto a second line sit as close as the rows below the toolbar do. */
+  gap: 8px 16px;
 }
 
 .button-group {
