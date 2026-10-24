@@ -46,9 +46,12 @@ export function ThresholdBars({
         scale={scale}
         showBar={showBars}
         showBoundaries={showBoundaries}
+        // The Curvature method's one domain, as its settings table shows it.
+        highlighted={hoveredDomain === 0}
         title="Drag to change the curvature threshold"
         onHeightChange={(value) => onCommand({ kind: 'setThresholdHeight', value })}
         onRangeChange={(start, end) => onCommand({ kind: 'setThresholdDomain', start, end })}
+        onHover={(hovered) => onHoverDomain(hovered ? 0 : null)}
       />
     )
   }

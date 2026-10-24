@@ -522,29 +522,6 @@ select {
   user-select: none;
 }
 
-.detection-settings-groups {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.detection-settings fieldset {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-  padding: 8px 12px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface);
-}
-
-.detection-settings legend {
-  padding: 0 4px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
 .detection-settings .setting {
   display: flex;
   align-items: center;
@@ -582,9 +559,7 @@ select {
   padding: 3px 24px 3px 7px;
 }
 
-/* Curvature (vnext) settings */
-
-.vnext-settings {
+.detection-settings-body {
   display: flex;
   flex-direction: column;
   gap: 8px;

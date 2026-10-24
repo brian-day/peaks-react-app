@@ -6,7 +6,7 @@ import type { Command, DatasetSnapshot, Method, Point } from '../api/types'
 import { MessageList } from '../components/MessageList'
 import { useElementSize } from '../hooks/useElementSize'
 import { DetectionSettings } from '../settings/DetectionSettings'
-import { VnextDetectionSettings } from '../settings/VnextDetectionSettings'
+import { CURVATURE_EDITS, curvatureDomain, VNEXT_EDITS } from '../settings/domainEdits'
 import { peakAt } from './hitTest'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
@@ -84,6 +84,21 @@ export function ChromatogramPlot({
   const mode = (chosenMode === 'addPeak' || chosenMode === 'addDomain') && chosenMode !== addMode ? 'zoom' : chosenMode
   // The domain hovered in the domain table or on the plot, highlighted in both.
   const [hoveredDomain, setHoveredDomain] = useState<number | null>(null)
+  // Both Curvature methods show their settings as domains; the Curvature method's one domain is
+  // its threshold's range.
+  const detection = dataset.vnextSettings
+    ? {
+        smoothingMethod: dataset.vnextSettings.smoothingMethod,
+        domains: dataset.vnextSettings.domains,
+        edits: VNEXT_EDITS,
+      }
+    : dataset.curvatureSettings
+      ? {
+          smoothingMethod: dataset.curvatureSettings.smoothingMethod,
+          domains: [curvatureDomain(dataset.curvatureSettings)],
+          edits: CURVATURE_EDITS,
+        }
+      : null
 
   // −y'' only exists under the Curvature methods. The choice is kept while another method is active,
   // so the curve comes back on returning to one.
@@ -226,16 +241,9 @@ export function ChromatogramPlot({
         <DomainToolbar domains={dataset.vnextSettings.domains} onCommand={onCommand} />
       )}
       {belowToolbar}
-      {method === 'Curvature' && dataset.curvatureSettings && (
+      {detection && (
         <DetectionSettings
-          settings={dataset.curvatureSettings}
-          units={{ x: dataset.xUnits, y: dataset.yUnits }}
-          onCommand={onCommand}
-        />
-      )}
-      {method === 'CurvatureVnext' && dataset.vnextSettings && (
-        <VnextDetectionSettings
-          settings={dataset.vnextSettings}
+          {...detection}
           units={{ x: dataset.xUnits, y: dataset.yUnits }}
           hoveredDomain={hoveredDomain}
           onHoverDomain={setHoveredDomain}

@@ -1,8 +1,11 @@
 import type { Command, DomainSettings } from '../api/types'
+import type { DomainEdits } from './domainEdits'
 import { NumberField } from './NumberField'
 
 type Props = {
   domains: DomainSettings[]
+  /** The commands each edit sends, for whichever Curvature method is active. */
+  edits: DomainEdits
   units: { x: string; y: string }
   /** The domain whose row to highlight, by its index. */
   hoveredDomain: number | null
@@ -24,7 +27,7 @@ type DomainColumn = {
   command: (domainIndex: number, domain: DomainSettings, value: number) => Command
 }
 
-function domainColumns(units: Props['units']): DomainColumn[] {
+function domainColumns(units: Props['units'], edits: DomainEdits): DomainColumn[] {
   return [
     {
       group: 'Range',
@@ -32,7 +35,7 @@ function domainColumns(units: Props['units']): DomainColumn[] {
       name: 'start',
       units: units.x,
       value: (domain) => domain.start,
-      command: (domainIndex, domain, start) => ({ kind: 'setDomainRange', domainIndex, start, end: domain.end }),
+      command: (domainIndex, domain, start) => edits.setRange(domainIndex, start, domain.end),
     },
     {
       group: 'Range',
@@ -40,7 +43,7 @@ function domainColumns(units: Props['units']): DomainColumn[] {
       name: 'end',
       units: units.x,
       value: (domain) => domain.end,
-      command: (domainIndex, domain, end) => ({ kind: 'setDomainRange', domainIndex, start: domain.start, end }),
+      command: (domainIndex, domain, end) => edits.setRange(domainIndex, domain.start, end),
     },
     {
       group: 'Smoothing',
@@ -48,7 +51,7 @@ function domainColumns(units: Props['units']): DomainColumn[] {
       name: 'smoothing',
       units: units.x,
       value: (domain) => domain.smoothing,
-      command: (domainIndex, _, value) => ({ kind: 'setDomainSmoothing', domainIndex, value }),
+      command: (domainIndex, _, value) => edits.setSmoothing(domainIndex, value),
     },
     {
       group: 'Smoothing',
@@ -56,7 +59,7 @@ function domainColumns(units: Props['units']): DomainColumn[] {
       name: 'threshold',
       units: `${units.y}/${units.x}²`,
       value: (domain) => domain.threshold,
-      command: (domainIndex, _, value) => ({ kind: 'setDomainThreshold', domainIndex, value }),
+      command: (domainIndex, _, value) => edits.setThreshold(domainIndex, value),
     },
     {
       group: 'Baseline',
@@ -64,12 +67,8 @@ function domainColumns(units: Props['units']): DomainColumn[] {
       name: 'liftoff',
       units: '%',
       value: (domain) => domain.liftOffPercent,
-      command: (domainIndex, domain, liftOffPercent) => ({
-        kind: 'setDomainLiftOffTouchDown',
-        domainIndex,
-        liftOffPercent,
-        touchDownPercent: domain.touchDownPercent,
-      }),
+      command: (domainIndex, domain, liftOffPercent) =>
+        edits.setLiftOffTouchDown(domainIndex, liftOffPercent, domain.touchDownPercent),
     },
     {
       group: 'Baseline',
@@ -77,12 +76,8 @@ function domainColumns(units: Props['units']): DomainColumn[] {
       name: 'touchdown',
       units: '%',
       value: (domain) => domain.touchDownPercent,
-      command: (domainIndex, domain, touchDownPercent) => ({
-        kind: 'setDomainLiftOffTouchDown',
-        domainIndex,
-        liftOffPercent: domain.liftOffPercent,
-        touchDownPercent,
-      }),
+      command: (domainIndex, domain, touchDownPercent) =>
+        edits.setLiftOffTouchDown(domainIndex, domain.liftOffPercent, touchDownPercent),
     },
     {
       group: 'Exclusions',
@@ -90,12 +85,7 @@ function domainColumns(units: Props['units']): DomainColumn[] {
       name: 'minimum area',
       units: `${units.y}·${units.x}`,
       value: (domain) => domain.minArea,
-      command: (domainIndex, domain, area) => ({
-        kind: 'setDomainMinimumPeakSize',
-        domainIndex,
-        area,
-        height: domain.minHeight,
-      }),
+      command: (domainIndex, domain, area) => edits.setMinimumPeakSize(domainIndex, area, domain.minHeight),
     },
     {
       group: 'Exclusions',
@@ -103,12 +93,7 @@ function domainColumns(units: Props['units']): DomainColumn[] {
       name: 'minimum height',
       units: units.y,
       value: (domain) => domain.minHeight,
-      command: (domainIndex, domain, height) => ({
-        kind: 'setDomainMinimumPeakSize',
-        domainIndex,
-        area: domain.minArea,
-        height,
-      }),
+      command: (domainIndex, domain, height) => edits.setMinimumPeakSize(domainIndex, domain.minArea, height),
     },
   ]
 }
@@ -130,12 +115,12 @@ function startsGroup(columns: DomainColumn[], index: number) {
 }
 
 /**
- * Curvature (vnext)'s domains, one row each in order of their start, with every setting a domain
- * has of its own, grouped under headings as the Curvature method's settings are. Rows are
- * numbered as the commands number domains.
+ * The domains peaks are detected in, one row each in order of their start, with every setting a
+ * domain has of its own, grouped under headings. Rows are numbered as the commands number domains.
  */
-export function DomainTable({ domains, units, hoveredDomain, onHoverDomain, onCommand }: Props) {
-  const columns = domainColumns(units)
+export function DomainTable({ domains, edits, units, hoveredDomain, onHoverDomain, onCommand }: Props) {
+  const columns = domainColumns(units, edits)
+  const { remove } = edits
   const groupClass = (index: number) => (startsGroup(columns, index) ? 'group-start' : undefined)
 
   return (
@@ -188,9 +173,15 @@ export function DomainTable({ domains, units, hoveredDomain, onHoverDomain, onCo
                 type="button"
                 className="remove-domain"
                 aria-label={`Remove domain ${domainIndex + 1}`}
-                title={domains.length === 1 ? 'An analysis needs at least one domain' : 'Remove this domain'}
-                disabled={domains.length === 1}
-                onClick={() => onCommand({ kind: 'removeDomain', domainIndex })}
+                title={
+                  !remove
+                    ? 'This method has one domain, its threshold\u2019s range'
+                    : domains.length === 1
+                      ? 'An analysis needs at least one domain'
+                      : 'Remove this domain'
+                }
+                disabled={!remove || domains.length === 1}
+                onClick={() => remove && onCommand(remove(domainIndex))}
               >
                 ×
               </button>
