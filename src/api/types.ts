@@ -53,6 +53,8 @@ export type AnalysisView =
 export type ApiMessage = { level: 'Warning' | 'Error'; message: string }
 
 export type DatasetSnapshot = {
+  /** Which of the session's datasets this is, counted from 1. */
+  index: number
   xUnits: string
   yUnits: string
   /** The trace: every point, or about 100k of them if it has more. */
@@ -146,10 +148,43 @@ export type PeakRow = {
   domain: number | null
 }
 
+/** What can be analyzed, named as SLL names its type. */
+export type ObjectType = 'Object[Data, Chromatography]' | 'Object[Protocol, HPLC]' | 'Object[Protocol, FPLC]'
+
+export type DatasetSummary = {
+  /** Counted from 1. */
+  index: number
+  /** The ID of the `Object[Data]` it was downloaded from; `null` for data with no object. */
+  dataObject: string | null
+}
+
+/** One injection of a protocol, mirroring DVA's `peaks_server/src/injection_table.rs`. */
+export type Injection = {
+  /** `'Sample'`, `'Blank'`, `'Standard'`, `'ColumnPrime'` or `'ColumnFlush'`. */
+  type: string | null
+  /** The sample's name, or its ID if it has none. */
+  sample: string | null
+  /** In microliters. */
+  injectionVolume: number | null
+  /** The gradient method's name, or its ID if it has none. */
+  gradient: string | null
+  /** In degrees Celsius. */
+  columnTemperature: number | null
+  columnPosition: string | null
+  dataObject: string | null
+  /** The session's dataset for this injection, or `null` if its data is not analyzed. */
+  datasetIndex: number | null
+}
+
 export type CreatedSession = {
   sessionId: string
   /** Non-fatal messages from building the analysis. */
   messages: ApiMessage[]
+  /** Every dataset in the analysis, in order. */
+  datasets: DatasetSummary[]
+  /** A protocol's injections, in order; `null` for a data object. */
+  injectionTable: Injection[] | null
+  /** The dataset being looked at, which starts as the first. */
   dataset: DatasetSnapshot
 }
 

@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { MessageList } from './components/MessageList'
 import { ObjectIdForm } from './components/ObjectIdForm'
 import { useSession } from './hooks/useSession'
+import { InjectionTable } from './injections/InjectionTable'
 import { ChromatogramPlot } from './plot/ChromatogramPlot'
 import { PeaksTable } from './table/PeaksTable'
 
 function App() {
-  const { state, create, sendCommand } = useSession()
+  const { state, create, sendCommand, selectDataset } = useSession()
   // The peak under the pointer in the plot or the table, highlighted in both.
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
 
@@ -20,7 +21,19 @@ function App() {
       {state.status === 'loaded' && (
         <>
           <MessageList messages={[...state.session.messages, ...state.commandErrors]} />
-          {/* A new key per session gives each one a fresh plot, so a new analysis starts zoomed out. */}
+          {state.session.injectionTable && (
+            <InjectionTable
+              injections={state.session.injectionTable}
+              activeDataset={state.session.dataset.index}
+              onSelectDataset={(datasetIndex) => {
+                // The hovered peak belongs to the dataset being left.
+                setHoveredKey(null)
+                selectDataset(datasetIndex)
+              }}
+            />
+          )}
+          {/* A new key per session gives each one a fresh plot, so a new analysis starts zoomed out.
+              Switching datasets keeps the plot, and its zoom, so injections compare at one scale. */}
           <ChromatogramPlot
             key={state.session.sessionId}
             sessionId={state.session.sessionId}

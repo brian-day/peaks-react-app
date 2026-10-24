@@ -1,4 +1,12 @@
-import type { ApiMessage, Command, CommandResult, CreatedSession, Overlays } from './types'
+import type {
+  ApiMessage,
+  Command,
+  CommandResult,
+  CreatedSession,
+  DatasetSnapshot,
+  ObjectType,
+  Overlays,
+} from './types'
 
 /** A request that failed, with the messages explaining why. */
 export class ApiError extends Error {
@@ -10,9 +18,14 @@ export class ApiError extends Error {
   }
 }
 
-/** Downloads and analyzes an `Object[Data, Chromatography]`, starting a session for it. */
-export function createSession(objectId: string): Promise<CreatedSession> {
-  return request('POST', '/api/sessions', { body: { objectId } })
+/** Downloads and analyzes a data object or protocol, starting a session for it. */
+export function createSession(objectType: ObjectType, objectId: string): Promise<CreatedSession> {
+  return request('POST', '/api/sessions', { body: { objectType, objectId } })
+}
+
+/** Makes another of the session's datasets the one edits and overlays apply to, and returns it. */
+export function setActiveDataset(sessionId: string, datasetIndex: number): Promise<DatasetSnapshot> {
+  return request('POST', `/api/sessions/${sessionId}/active-dataset`, { body: { datasetIndex } })
 }
 
 /** Applies one edit to a session's analysis. */

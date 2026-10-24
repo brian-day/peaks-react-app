@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { ApiError, applyCommand, createSession } from '../api/client'
-import type { ApiMessage, Command, CreatedSession, Method } from '../api/types'
+import { ApiError, applyCommand, createSession, setActiveDataset } from '../api/client'
+import type { ApiMessage, Command, CreatedSession, Method, ObjectType } from '../api/types'
 
 export type SessionState =
   | { status: 'idle' }
@@ -10,21 +10,21 @@ export type SessionState =
       status: 'loaded'
       session: CreatedSession
       method: Method
-      /** Why the most recent edit failed; empty once one succeeds. */
+      /** Why the most recent edit or dataset switch failed; empty once one succeeds. */
       commandErrors: ApiMessage[]
     }
 
 // peaks_server builds every analysis with default options, and the default method is Curvature.
 const INITIAL_METHOD: Method = 'Curvature'
 
-/** Starts an analysis session, and edits it once started. */
+/** Starts an analysis session, and edits it and switches between its datasets once started. */
 export function useSession() {
   const [state, setState] = useState<SessionState>({ status: 'idle' })
 
-  const create = useCallback(async (objectId: string) => {
+  const create = useCallback(async (objectType: ObjectType, objectId: string) => {
     setState({ status: 'loading' })
     try {
-      const session = await createSession(objectId)
+      const session = await createSession(objectType, objectId)
       setState({ status: 'loaded', session, method: INITIAL_METHOD, commandErrors: [] })
     } catch (error) {
       setState({ status: 'failed', messages: toMessages(error) })
@@ -66,7 +66,29 @@ export function useSession() {
     [sessionId],
   )
 
-  return { state, create, sendCommand }
+  /** Shows another of the session's datasets. Never throws; failures land in `commandErrors`. */
+  const selectDataset = useCallback(
+    async (datasetIndex: number) => {
+      if (sessionId === null) return
+      try {
+        const dataset = await setActiveDataset(sessionId, datasetIndex)
+        setState((current) =>
+          current.status === 'loaded' && current.session.sessionId === sessionId
+            ? { ...current, session: { ...current.session, dataset }, commandErrors: [] }
+            : current,
+        )
+      } catch (error) {
+        setState((current) =>
+          current.status === 'loaded' && current.session.sessionId === sessionId
+            ? { ...current, commandErrors: toMessages(error) }
+            : current,
+        )
+      }
+    },
+    [sessionId],
+  )
+
+  return { state, create, sendCommand, selectDataset }
 }
 
 function toMessages(error: unknown): ApiMessage[] {

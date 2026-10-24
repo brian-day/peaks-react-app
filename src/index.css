@@ -343,28 +343,33 @@ body {
   margin: 0;
 }
 
-.peaks-table-scroll {
+.peaks-table-scroll,
+.injection-table-scroll {
   overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
 }
 
-.peaks-table table {
+.peaks-table table,
+.injection-table table {
   border-collapse: collapse;
   width: 100%;
   font-size: 0.9rem;
 }
 
 .peaks-table th,
-.peaks-table td {
+.peaks-table td,
+.injection-table th,
+.injection-table td {
   padding: 6px 12px;
   text-align: left;
   white-space: nowrap;
   border-bottom: 1px solid var(--border);
 }
 
-.peaks-table th {
+.peaks-table th,
+.injection-table th {
   font-weight: 600;
   vertical-align: bottom;
   background: var(--background);
@@ -406,12 +411,14 @@ body {
   color: var(--muted);
 }
 
-.peaks-table .numeric {
+.peaks-table .numeric,
+.injection-table .numeric {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-.peaks-table .units {
+.peaks-table .units,
+.injection-table .units {
   display: block;
   font-weight: 400;
   font-size: 0.8rem;
@@ -472,7 +479,8 @@ body {
 
 /* Detection settings */
 
-.detection-settings summary {
+.detection-settings summary,
+.injection-table summary {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
@@ -676,4 +684,32 @@ body {
   fill: none;
   stroke: var(--error);
   stroke-opacity: 1;
+}
+
+/* Injections */
+
+.injection-table {
+  margin-bottom: 12px;
+}
+
+.injection-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.injection-row--selectable {
+  cursor: pointer;
+}
+
+.injection-row--selectable:hover td {
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+
+.injection-row--active td,
+.injection-row--active:hover td {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  font-weight: 600;
+}
+
+.injection-row--not-analyzed {
+  color: var(--muted);
 }
