@@ -35,6 +35,7 @@ function App() {
             rows={state.session.dataset.table}
             analysis={state.session.dataset.analysis}
             units={{ x: state.session.dataset.xUnits, y: state.session.dataset.yUnits }}
+            domains={state.session.dataset.vnextSettings?.domains ?? null}
             hoveredKey={hoveredKey}
             onHoverPeak={setHoveredKey}
           />

@@ -364,8 +364,40 @@ body {
   background: var(--background);
 }
 
-.peaks-table tbody tr:last-child td {
+.peaks-table tbody:last-child tr:last-child td {
   border-bottom: none;
+}
+
+.peaks-table .domain-heading th {
+  padding: 0;
+  background: var(--background);
+}
+
+/* The whole heading toggles its group, so it reads as a heading rather than a button. */
+.domain-heading button {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+}
+
+.domain-heading-arrow {
+  width: 1em;
+  font-size: 0.75em;
+}
+
+.domain-heading-count {
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .peaks-table .numeric {
