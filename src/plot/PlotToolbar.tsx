@@ -1,8 +1,9 @@
+import { hasSecondDerivative, METHOD_LABELS } from '../api/methods'
 import type { Method } from '../api/types'
 import type { Mode } from './InteractionLayer'
 
 // Threshold is left out until the app can create thresholds; switching to it would show nothing.
-const METHODS: Method[] = ['Curvature', 'Manual']
+const METHODS: Method[] = ['Curvature', 'CurvatureVnext', 'Manual']
 
 const MODES: { mode: Mode; label: string; hint: string }[] = [
   { mode: 'zoom', label: 'Zoom', hint: 'Drag a box to zoom in; double-click to zoom out' },
@@ -23,7 +24,7 @@ type Props = {
 
 /**
  * Chooses the peak-picking method, what dragging across the plot does, and which curves are
- * drawn: the trace, and under the Curvature method −y''.
+ * drawn: the trace, and under the Curvature methods −y''.
  */
 export function PlotToolbar({
   method,
@@ -40,7 +41,7 @@ export function PlotToolbar({
       <ButtonGroup label="Method">
         {METHODS.map((m) => (
           <button key={m} type="button" aria-pressed={m === method} onClick={() => onMethodChange(m)}>
-            {m}
+            {METHOD_LABELS[m]}
           </button>
         ))}
       </ButtonGroup>
@@ -70,7 +71,7 @@ export function PlotToolbar({
           <span className="swatch swatch--trace" aria-hidden="true" />
           Trace
         </button>
-        {method === 'Curvature' && (
+        {hasSecondDerivative(method) && (
           <button
             type="button"
             title="The negative second derivative of the smoothed data, on the right-hand axis; its bumps are the peaks"

@@ -61,6 +61,8 @@ export type DatasetSnapshot = {
   table: PeakRow[]
   /** `null` unless the Curvature method is active. */
   curvatureSettings: CurvatureSettings | null
+  /** `null` unless the Curvature (vnext) method is active. */
+  vnextSettings: VnextSettings | null
 }
 
 export type SmoothingMethod = 'Gaussian' | 'SavitzkyGolay'
@@ -81,6 +83,33 @@ export type CurvatureSettings = {
   liftOffPercent: number
   touchDownPercent: number
   /** Peaks with less area, or less height, than these are excluded. */
+  minArea: number
+  minHeight: number
+}
+
+/**
+ * The Curvature (vnext) method's settings, mirroring DVA's `peaks_server/src/settings.rs`: a
+ * shared smoothing, and each domain's own settings. Settings in effect, as with
+ * {@link CurvatureSettings}.
+ */
+export type VnextSettings = {
+  smoothingMethod: SmoothingMethod
+  /** The smoothing width, in x units, of every domain that does not set its own. */
+  smoothing: number
+  /** In order of their start; commands and table rows number domains by position here. */
+  domains: DomainSettings[]
+}
+
+export type DomainSettings = {
+  start: number
+  end: number
+  /** The smoothing width this domain is detected at. */
+  smoothing: number
+  /** Whether that is the shared width, rather than one the domain sets itself. */
+  defaultSmoothing: boolean
+  threshold: number
+  liftOffPercent: number
+  touchDownPercent: number
   minArea: number
   minHeight: number
 }
@@ -113,6 +142,8 @@ export type PeakRow = {
   id: PeakIdentity
   kind: 'included' | 'excluded' | 'unexpected'
   values: Record<ColumnKey, CellValue>
+  /** Under Curvature (vnext), the position of the domain the peak was found in; otherwise `null`. */
+  domain: number | null
 }
 
 export type CreatedSession = {
@@ -122,7 +153,7 @@ export type CreatedSession = {
   dataset: DatasetSnapshot
 }
 
-export type Method = 'Manual' | 'Threshold' | 'Curvature'
+export type Method = 'Manual' | 'Threshold' | 'Curvature' | 'CurvatureVnext'
 
 /** An edit to a session's analysis, mirroring DVA's `peaks_server/src/commands.rs`. */
 export type Command =
@@ -139,14 +170,26 @@ export type Command =
   | { kind: 'resetDetection' }
   | { kind: 'resetLiftOffTouchDown' }
   | { kind: 'resetMinimumPeakSize' }
+  // Curvature (vnext)'s domains, by their position in `VnextSettings.domains`. A `null` smoothing
+  // uses the shared width; a `null` threshold lets the analysis choose it.
+  | { kind: 'addDomain'; start: number; end: number }
+  | { kind: 'removeDomain'; domainIndex: number }
+  | { kind: 'setDomainRange'; domainIndex: number; start: number; end: number }
+  | { kind: 'setDomainSmoothing'; domainIndex: number; value: number | null }
+  | { kind: 'setDomainThreshold'; domainIndex: number; value: number | null }
+  | { kind: 'setDomainLiftOffTouchDown'; domainIndex: number; liftOffPercent: number; touchDownPercent: number }
+  | { kind: 'setDomainMinimumPeakSize'; domainIndex: number; area: number; height: number }
 
 /**
- * Curves drawn over the trace under the Curvature method, mirroring DVA's
+ * Curves drawn over the trace under the Curvature methods, mirroring DVA's
  * `peaks_server/src/overlays.rs`.
  */
 export type Overlays = {
-  /** `[x, -y'']` of the smoothed data, whose bumps are the peaks. */
+  /** `[x, -y'']` of the smoothed data, whose bumps are the peaks. Under Curvature (vnext), each
+   * domain's stretch is at that domain's own smoothing. */
   negativeSecondDerivative: XY[]
+  /** Under Curvature (vnext), each domain as `[start, end]`, in order; otherwise `null`. */
+  domains: [start: number, end: number][] | null
 }
 
 /** The analysis, its table and its detection settings after an edit. */
@@ -154,4 +197,5 @@ export type CommandResult = {
   analysis: AnalysisView
   table: PeakRow[]
   curvatureSettings: CurvatureSettings | null
+  vnextSettings: VnextSettings | null
 }

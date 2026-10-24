@@ -1,5 +1,6 @@
 import { scaleLinear } from 'd3-scale'
 import { useCallback, useMemo, useRef, useState } from 'react'
+import { hasSecondDerivative } from '../api/methods'
 import { allPeaks, peakKey } from '../api/peakIdentity'
 import type { Command, DatasetSnapshot, Method, Point } from '../api/types'
 import { MessageList } from '../components/MessageList'
@@ -62,13 +63,13 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
   // Switching away from Manual leaves nothing to add peaks to, so dragging zooms again.
   const mode = chosenMode === 'addPeak' && method !== 'Manual' ? 'zoom' : chosenMode
 
-  // −y'' only exists under Curvature. The choice is kept while another method is active, so the
-  // curve comes back on returning to it.
+  // −y'' only exists under the Curvature methods. The choice is kept while another method is active,
+  // so the curve comes back on returning to one.
   const [chosenSecondDerivative, setChosenSecondDerivative] = useState(false)
   // Hiding the trace hides the peaks drawn on it too, leaving −y'' and its threshold to read on
   // their own. The table still lists the peaks.
   const [showTrace, setShowTrace] = useState(true)
-  const showSecondDerivative = method === 'Curvature' && chosenSecondDerivative
+  const showSecondDerivative = hasSecondDerivative(method) && chosenSecondDerivative
   const { overlays, errors: overlayErrors } = useOverlays(sessionId, showSecondDerivative, dataset.analysis)
   const showRightAxis = showSecondDerivative && overlays !== null
   const margin = showRightAxis ? { ...MARGIN, right: RIGHT_AXIS_MARGIN } : MARGIN
