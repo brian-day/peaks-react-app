@@ -36,9 +36,9 @@ export function InjectionTable({ injections, activeDataset, onSelectDataset }: P
               </th>
               <th>Gradient</th>
               <th className="numeric">
-                Column temp.<span className="units">°C</span>
+                Column Temp.<span className="units">°C</span>
               </th>
-              <th>Column position</th>
+              <th>Column Position</th>
             </tr>
           </thead>
           <tbody>

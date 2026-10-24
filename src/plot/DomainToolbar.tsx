@@ -41,7 +41,7 @@ export function DomainToolbar({ domains, onCommand }: Props) {
   const gaps = hasGaps(domains)
   return (
     <div className="plot-toolbar">
-      <ButtonGroup label="Snap domains">
+      <ButtonGroup label="Snap Domains">
         {SNAPS.map(({ snap: direction, label, hint }) => (
           <button
             key={direction}

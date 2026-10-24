@@ -86,7 +86,7 @@ function domainColumns(units: Props['units']): DomainColumn[] {
     },
     {
       group: 'Exclusions',
-      label: 'Min area',
+      label: 'Min Area',
       name: 'minimum area',
       units: `${units.y}·${units.x}`,
       value: (domain) => domain.minArea,
@@ -99,7 +99,7 @@ function domainColumns(units: Props['units']): DomainColumn[] {
     },
     {
       group: 'Exclusions',
-      label: 'Min height',
+      label: 'Min Height',
       name: 'minimum height',
       units: units.y,
       value: (domain) => domain.minHeight,

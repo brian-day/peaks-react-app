@@ -112,7 +112,7 @@ export function PeaksTable({ rows, analysis, units, domains, hoveredKey, onHover
                           </span>
                           {domain !== null && range
                             ? `Domain ${domain + 1} · ${formatNumber(range.start)}–${formatNumber(range.end)} ${units.x}`
-                            : 'Outside the domains'}
+                            : 'Outside the Domains'}
                           {/* Says how many are hidden while collapsed. */}
                           {!open && <span className="domain-heading-count">{peakCount(groupRows.length)}</span>}
                         </button>

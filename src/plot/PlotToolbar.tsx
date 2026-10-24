@@ -63,7 +63,7 @@ export function PlotToolbar({
           </button>
         ))}
       </ButtonGroup>
-      <ButtonGroup label="Drag to">
+      <ButtonGroup label="Drag To">
         {MODES
           // Each adding mode only means something under its own method, so it is shown only there.
           .filter(({ mode: m }) => (m !== 'addPeak' && m !== 'addDomain') || m === addModeFor(method))
