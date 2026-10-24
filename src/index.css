@@ -55,6 +55,10 @@ body {
   width: 18ch;
 }
 
+.object-id-form select {
+  padding: 5px 26px 5px 9px;
+}
+
 .object-id-form button {
   font: inherit;
   padding: 4px 12px;
@@ -62,6 +66,22 @@ body {
 
 .status {
   color: var(--muted);
+}
+
+/* Drop-downs drawn like the text inputs beside them, rather than as the browser's raised buttons:
+   the same thin grey border, and a pixel more padding for the border's pixel less, so they stand
+   as tall. The arrow is drawn in place of the native one. */
+select {
+  appearance: none;
+  box-sizing: content-box;
+  font: inherit;
+  color: var(--text);
+  border: 1px solid rgb(118, 118, 118);
+  border-radius: 2px;
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23656d76' stroke-width='1.5'/%3E%3C/svg%3E")
+    no-repeat right 8px center;
+  cursor: pointer;
 }
 
 .messages {
@@ -558,8 +578,8 @@ body {
 }
 
 .detection-settings select {
-  font: inherit;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  padding: 3px 24px 3px 7px;
 }
 
 /* Curvature (vnext) settings */
