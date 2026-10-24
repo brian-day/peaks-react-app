@@ -1,5 +1,6 @@
 import { addModeFor, hasSecondDerivative, METHOD_LABELS } from '../api/methods'
 import type { Method } from '../api/types'
+import { ButtonGroup } from '../components/ButtonGroup'
 import type { Mode } from './InteractionLayer'
 
 // Threshold is left out until the app can create thresholds; switching to it would show nothing.
@@ -104,15 +105,6 @@ export function PlotToolbar({
           </button>
         )}
       </ButtonGroup>
-    </div>
-  )
-}
-
-function ButtonGroup({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="button-group" role="group" aria-label={label}>
-      <span className="button-group-label">{label}</span>
-      {children}
     </div>
   )
 }

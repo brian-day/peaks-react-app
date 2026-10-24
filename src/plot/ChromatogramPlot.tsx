@@ -11,6 +11,7 @@ import { peakAt } from './hitTest'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
 import { AxisDragArea } from './AxisDragArea'
+import { DomainToolbar } from './DomainToolbar'
 import { InteractionLayer, type Mode } from './InteractionLayer'
 import { PlotContext, type PlotGeometry } from './plotContext'
 import { PlotToolbar } from './PlotToolbar'
@@ -199,6 +200,9 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
         domains={chosenDomains}
         onDomainsChange={setChosenDomains}
       />
+      {method === 'CurvatureVnext' && dataset.vnextSettings && (
+        <DomainToolbar domains={dataset.vnextSettings.domains} onCommand={onCommand} />
+      )}
       {method === 'Curvature' && dataset.curvatureSettings && (
         <DetectionSettings
           settings={dataset.curvatureSettings}
