@@ -4,14 +4,18 @@ import { usePlot } from './plotContext'
 import { clampToViewport, pan, zoomBoxOutcome, type MinSpan, type Viewport } from './viewport'
 
 /** What dragging across the plot does. */
-export type Mode = 'zoom' | 'pan' | 'addPeak'
+export type Mode = 'zoom' | 'pan' | AddMode
 
-// A new peak narrower than this on screen is taken as a slip of the mouse.
-const MIN_NEW_PEAK_PIXELS = 4
+/** The modes that drag out an x range to add something over. */
+export type AddMode = 'addPeak' | 'addDomain'
+
+// A new peak or domain narrower than this on screen is taken as a slip of the mouse.
+const MIN_NEW_RANGE_PIXELS = 4
 
 type Props = {
   mode: Mode
-  canAddPeaks: boolean
+  /** What holding Alt (Option) drags out, if anything can be added under the method. */
+  altMode: AddMode | null
   view: Viewport
   full: Viewport
   minSpan: MinSpan
@@ -19,6 +23,7 @@ type Props = {
   /** Zooms all the way out; double-clicking does this. */
   onResetView: () => void
   onAddPeak: (low: number, high: number) => void
+  onAddDomain: (start: number, end: number) => void
   /** Where the pointer is over the plot, in data coordinates, or `null` once it is not. */
   onHover: (point: Point | null) => void
 }
@@ -28,23 +33,25 @@ type Drag =
   | { kind: 'zoomBox'; start: Point; end: Point }
   /** Where the drag started in screen pixels, and the view at that moment. */
   | { kind: 'pan'; startX: number; startY: number; startView: Viewport }
-  /** The x range dragged across, in data units. */
-  | { kind: 'addPeak'; start: number; end: number }
+  /** The x range dragged across, in data units, and what it adds. */
+  | { kind: 'add'; adds: AddMode; start: number; end: number }
 
 /**
  * Covers the plot area, beneath the data, and turns drags into zooming, panning or adding a
- * peak. Holding Shift pans, and Alt (Option) adds a peak, for one drag whatever the mode.
+ * peak or domain. Holding Shift pans, and Alt (Option) adds whatever the method can add, for one
+ * drag whatever the mode.
  * Double-click zooms all the way out.
  */
 export function InteractionLayer({
   mode,
-  canAddPeaks,
+  altMode,
   view,
   full,
   minSpan,
   onViewChange,
   onResetView,
   onAddPeak,
+  onAddDomain,
   onHover,
 }: Props) {
   const { xScale, width, height, pointerToData } = usePlot()
@@ -59,7 +66,7 @@ export function InteractionLayer({
     // Keep receiving this pointer's events even once it leaves the plot, until it is released.
     event.currentTarget.setPointerCapture(event.pointerId)
 
-    const dragMode = event.shiftKey ? 'pan' : event.altKey && canAddPeaks ? 'addPeak' : mode
+    const dragMode = event.shiftKey ? 'pan' : event.altKey && altMode ? altMode : mode
     const point = toData(event)
     switch (dragMode) {
       case 'zoom':
@@ -67,7 +74,8 @@ export function InteractionLayer({
       case 'pan':
         return setDrag({ kind: 'pan', startX: event.clientX, startY: event.clientY, startView: view })
       case 'addPeak':
-        return setDrag({ kind: 'addPeak', start: point.x, end: point.x })
+      case 'addDomain':
+        return setDrag({ kind: 'add', adds: dragMode, start: point.x, end: point.x })
     }
   }
 
@@ -76,7 +84,7 @@ export function InteractionLayer({
     switch (drag?.kind) {
       case 'zoomBox':
         return setDrag({ ...drag, end: toData(event) })
-      case 'addPeak':
+      case 'add':
         return setDrag({ ...drag, end: toData(event).x })
       case 'pan': {
         // Measured from where the drag started, so rounding never accumulates. The data follows
@@ -93,9 +101,10 @@ export function InteractionLayer({
     if (drag?.kind === 'zoomBox') {
       const outcome = zoomBoxOutcome(drag.start, drag.end, view, minSpan)
       if (outcome.kind === 'zoom') onViewChange(outcome.viewport)
-    } else if (drag?.kind === 'addPeak') {
-      if (Math.abs(xScale(drag.end) - xScale(drag.start)) >= MIN_NEW_PEAK_PIXELS) {
-        onAddPeak(Math.min(drag.start, drag.end), Math.max(drag.start, drag.end))
+    } else if (drag?.kind === 'add') {
+      if (Math.abs(xScale(drag.end) - xScale(drag.start)) >= MIN_NEW_RANGE_PIXELS) {
+        const add = drag.adds === 'addPeak' ? onAddPeak : onAddDomain
+        add(Math.min(drag.start, drag.end), Math.max(drag.start, drag.end))
       }
     }
     setDrag(null)
@@ -116,9 +125,9 @@ export function InteractionLayer({
         onDoubleClick={onResetView}
       />
       {drag?.kind === 'zoomBox' && <ZoomBox drag={drag} view={view} minSpan={minSpan} />}
-      {drag?.kind === 'addPeak' && (
+      {drag?.kind === 'add' && (
         <rect
-          className="new-peak-band"
+          className={drag.adds === 'addPeak' ? 'new-peak-band' : 'new-domain-band'}
           x={xScale(Math.min(drag.start, drag.end))}
           width={Math.abs(xScale(drag.end) - xScale(drag.start))}
           height={height}

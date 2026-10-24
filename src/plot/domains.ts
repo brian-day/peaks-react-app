@@ -14,3 +14,15 @@ export function withinDomains(
     .map(([start, end]) => points.filter(([x]) => x >= start && x <= end))
     .filter((stretch) => stretch.length > 0)
 }
+
+/**
+ * How far domain `index`'s ends can be dragged: its start down to where the domain before it
+ * ends, and its end up to where the domain after it starts, so that domains never overlap.
+ * Domains are in order of their start.
+ */
+export function neighbourLimits(
+  domains: readonly { start: number; end: number }[],
+  index: number,
+): [min: number, max: number] {
+  return [domains[index - 1]?.end ?? -Infinity, domains[index + 1]?.start ?? Infinity]
+}

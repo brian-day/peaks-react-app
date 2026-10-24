@@ -4,6 +4,10 @@ import { NumberField } from './NumberField'
 type Props = {
   domains: DomainSettings[]
   units: { x: string; y: string }
+  /** The domain whose row to highlight, by its index. */
+  hoveredDomain: number | null
+  /** Called with the domain whose row the pointer is over, or `null`. */
+  onHoverDomain: (domainIndex: number | null) => void
   onCommand: (command: Command) => Promise<void>
 }
 
@@ -11,7 +15,7 @@ type Props = {
  * Curvature (vnext)'s domains, one row each in order of their start, with every setting a domain
  * has of its own. Rows are numbered as the commands number domains.
  */
-export function DomainTable({ domains, units, onCommand }: Props) {
+export function DomainTable({ domains, units, hoveredDomain, onHoverDomain, onCommand }: Props) {
   const columns = [
     { label: 'Start', units: units.x },
     { label: 'End', units: units.x },
@@ -42,7 +46,12 @@ export function DomainTable({ domains, units, onCommand }: Props) {
       <tbody>
         {domains.map((domain, domainIndex) => (
           // Domains have no identity of their own beyond their place in order.
-          <tr key={domainIndex}>
+          <tr
+            key={domainIndex}
+            className={domainIndex === hoveredDomain ? 'domain-row--highlighted' : undefined}
+            onPointerEnter={() => onHoverDomain(domainIndex)}
+            onPointerLeave={() => onHoverDomain(null)}
+          >
             <td>{domainIndex + 1}</td>
             <td>
               <NumberField

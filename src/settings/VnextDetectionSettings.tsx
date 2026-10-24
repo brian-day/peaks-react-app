@@ -5,6 +5,9 @@ import { SmoothingMethodSelect } from './SmoothingMethodSelect'
 type Props = {
   settings: VnextSettings
   units: { x: string; y: string }
+  /** The domain whose row to highlight, by its index. */
+  hoveredDomain: number | null
+  onHoverDomain: (domainIndex: number | null) => void
   onCommand: (command: Command) => Promise<void>
 }
 
@@ -13,7 +16,7 @@ type Props = {
  * domain's own settings, its smoothing width among them. Every change re-runs the detection, and
  * the peaks, table and −y'' follow.
  */
-export function VnextDetectionSettings({ settings, units, onCommand }: Props) {
+export function VnextDetectionSettings({ settings, units, hoveredDomain, onHoverDomain, onCommand }: Props) {
   return (
     // Collapses as the Curvature method's settings do, so switching between them feels the same.
     <details className="detection-settings" open>
@@ -23,7 +26,13 @@ export function VnextDetectionSettings({ settings, units, onCommand }: Props) {
           value={settings.smoothingMethod}
           onChange={(method) => onCommand({ kind: 'setSmoothingMethod', method })}
         />
-        <DomainTable domains={settings.domains} units={units} onCommand={onCommand} />
+        <DomainTable
+          domains={settings.domains}
+          units={units}
+          hoveredDomain={hoveredDomain}
+          onHoverDomain={onHoverDomain}
+          onCommand={onCommand}
+        />
       </div>
     </details>
   )

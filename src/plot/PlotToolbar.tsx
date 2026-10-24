@@ -1,4 +1,4 @@
-import { hasSecondDerivative, METHOD_LABELS } from '../api/methods'
+import { addModeFor, hasSecondDerivative, METHOD_LABELS } from '../api/methods'
 import type { Method } from '../api/types'
 import type { Mode } from './InteractionLayer'
 
@@ -9,6 +9,11 @@ const MODES: { mode: Mode; label: string; hint: string }[] = [
   { mode: 'zoom', label: 'Zoom', hint: 'Drag a box to zoom in; double-click to zoom out' },
   { mode: 'pan', label: 'Pan', hint: 'Drag to pan, or hold Shift in any mode' },
   { mode: 'addPeak', label: 'Add peak', hint: 'Drag across a peak to add it, or hold Alt (Option) in any mode' },
+  {
+    mode: 'addDomain',
+    label: 'Add domain',
+    hint: 'Drag across a stretch outside the domains to detect peaks there too, or hold Alt (Option) in any mode',
+  },
 ]
 
 type Props = {
@@ -52,8 +57,8 @@ export function PlotToolbar({
             type="button"
             title={hint}
             aria-pressed={m === mode}
-            // Adding peaks only means something under the Manual method.
-            disabled={m === 'addPeak' && method !== 'Manual'}
+            // Each adding mode only means something under its own method.
+            disabled={(m === 'addPeak' || m === 'addDomain') && m !== addModeFor(method)}
             onClick={() => onModeChange(m)}
           >
             {label}

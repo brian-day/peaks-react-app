@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { withinDomains } from './domains'
+import { neighbourLimits, withinDomains } from './domains'
 
 const curve: [number, number][] = [
   [0, 1],
@@ -35,5 +35,22 @@ describe('withinDomains', () => {
 
   it('is the whole curve when there are no domains', () => {
     expect(withinDomains(curve, null)).toEqual([curve])
+  })
+})
+
+describe('neighbourLimits', () => {
+  const domains = [
+    { start: 1, end: 3 },
+    { start: 5, end: 8 },
+    { start: 10, end: 12 },
+  ]
+
+  it('stops a middle domain at the domains either side', () => {
+    expect(neighbourLimits(domains, 1)).toEqual([3, 10])
+  })
+
+  it('leaves the outer ends of the first and last domains unlimited', () => {
+    expect(neighbourLimits(domains, 0)).toEqual([-Infinity, 5])
+    expect(neighbourLimits(domains, 2)).toEqual([8, Infinity])
   })
 })

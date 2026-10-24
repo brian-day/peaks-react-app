@@ -1,6 +1,6 @@
 import { scaleLinear } from 'd3-scale'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { hasSecondDerivative } from '../api/methods'
+import { addModeFor, hasSecondDerivative } from '../api/methods'
 import { allPeaks, peakKey } from '../api/peakIdentity'
 import type { Command, DatasetSnapshot, Method, Point } from '../api/types'
 import { MessageList } from '../components/MessageList'
@@ -17,7 +17,7 @@ import { PlotToolbar } from './PlotToolbar'
 import { dataPath, dataTransform } from './scale'
 import { withinDomains } from './domains'
 import { SecondDerivativeCurve } from './SecondDerivativeCurve'
-import { ThresholdBar } from './ThresholdBar'
+import { ThresholdBars } from './ThresholdBars'
 import { useOverlays } from './useOverlays'
 import { useWheelZoom } from './useWheelZoom'
 import {
@@ -50,7 +50,8 @@ type Props = {
 
 /**
  * A dataset's trace with the analysis drawn over it and a toolbar above, filling the width of its
- * container. The plot zooms, pans, and under the Manual method adds and moves peaks. Under the
+ * container. The plot zooms, pans, under the Manual method adds and moves peaks, and under
+ * Curvature (vnext) adds domains. Under the
  * Curvature method it can also overlay the −y'' of the smoothed data, on an axis of its own.
  *
  * Zooming or panning the plot area moves −y'' along with the trace's y. Each axis can also be
@@ -62,8 +63,11 @@ type Props = {
  */
 export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hoveredKey, onHoverPeak }: Props) {
   const [chosenMode, setMode] = useState<Mode>('zoom')
-  // Switching away from Manual leaves nothing to add peaks to, so dragging zooms again.
-  const mode = chosenMode === 'addPeak' && method !== 'Manual' ? 'zoom' : chosenMode
+  // Switching to a method that cannot add what the mode adds leaves dragging to zoom again.
+  const addMode = addModeFor(method)
+  const mode = (chosenMode === 'addPeak' || chosenMode === 'addDomain') && chosenMode !== addMode ? 'zoom' : chosenMode
+  // The domain hovered in the domain table or on the plot, highlighted in both.
+  const [hoveredDomain, setHoveredDomain] = useState<number | null>(null)
 
   // −y'' only exists under the Curvature methods. The choice is kept while another method is active,
   // so the curve comes back on returning to one.
@@ -200,6 +204,8 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
         <VnextDetectionSettings
           settings={dataset.vnextSettings}
           units={{ x: dataset.xUnits, y: dataset.yUnits }}
+          hoveredDomain={hoveredDomain}
+          onHoverDomain={setHoveredDomain}
           onCommand={onCommand}
         />
       )}
@@ -271,13 +277,14 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
                     whatever the mode says. */}
                 <InteractionLayer
                   mode={mode}
-                  canAddPeaks={method === 'Manual'}
+                  altMode={addMode}
                   view={view}
                   full={full}
                   minSpan={minSpan}
                   onViewChange={changePlotView}
                   onResetView={() => setView({ ...full, y2: secondFull })}
                   onAddPeak={(low, high) => onCommand({ kind: 'addManualPeak', low, high })}
+                  onAddDomain={(start, end) => onCommand({ kind: 'addDomain', start, end })}
                   onHover={hover}
                 />
                 <g clipPath="url(#plot-area)">
@@ -300,10 +307,13 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
                     />
                   )}
                   {/* On the −y'' axis, so only while −y'' is drawn to read it against. */}
-                  {showSecondDerivative && overlays && dataset.curvatureSettings && (
-                    <ThresholdBar
-                      settings={dataset.curvatureSettings}
+                  {showSecondDerivative && overlays && (
+                    <ThresholdBars
+                      curvatureSettings={dataset.curvatureSettings}
+                      vnextSettings={dataset.vnextSettings}
                       scale={secondDerivativeScale}
+                      hoveredDomain={hoveredDomain}
+                      onHoverDomain={setHoveredDomain}
                       onCommand={onCommand}
                     />
                   )}

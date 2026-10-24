@@ -200,8 +200,13 @@ body {
   pointer-events: none;
 }
 
-.curvature-threshold--dragging .curvature-threshold-line {
+.curvature-threshold--dragging .curvature-threshold-line,
+.curvature-threshold--highlighted .curvature-threshold-line {
   stroke-width: 3;
+}
+
+.curvature-threshold--highlighted .curvature-threshold-edge {
+  stroke-dasharray: none;
 }
 
 .curvature-threshold-grab {
@@ -266,7 +271,8 @@ body {
   cursor: grabbing;
 }
 
-.interaction-layer--addPeak {
+.interaction-layer--addPeak,
+.interaction-layer--addDomain {
   cursor: ew-resize;
 }
 
@@ -288,6 +294,14 @@ body {
   fill: var(--peak);
   fill-opacity: 0.15;
   stroke: var(--peak);
+  stroke-dasharray: 4 3;
+  pointer-events: none;
+}
+
+.new-domain-band {
+  fill: var(--second-derivative);
+  fill-opacity: 0.1;
+  stroke: var(--second-derivative);
   stroke-dasharray: 4 3;
   pointer-events: none;
 }
@@ -520,6 +534,10 @@ body {
 
 .domain-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.domain-row--highlighted td {
+  background: color-mix(in srgb, var(--second-derivative) 12%, var(--surface));
 }
 
 .domain-table .numeric {

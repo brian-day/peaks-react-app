@@ -1,17 +1,25 @@
 import { useState, type PointerEvent } from 'react'
-import type { Command, CurvatureSettings } from '../api/types'
 import { usePlot } from './plotContext'
 import type { Scale } from './scale'
 import { usePointerDrag } from './usePointerDrag'
 
+export type Threshold = { height: number; start: number; end: number }
+
 type Props = {
-  settings: CurvatureSettings
+  threshold: Threshold
+  /** How far the ends can be dragged, such as up to the neighbouring domains; unlimited if left out. */
+  limits?: readonly [min: number, max: number]
   /** The −y'' axis's scale, which the threshold's height is on. */
   scale: Scale
-  onCommand: (command: Command) => Promise<void>
+  /** Drawn more heavily, as when its row in the domain table is hovered. */
+  highlighted?: boolean
+  /** Shown while the pointer rests on the line. */
+  title: string
+  onHeightChange: (height: number) => Promise<void>
+  onRangeChange: (start: number, end: number) => Promise<void>
+  /** Called as the pointer enters and leaves the bar. */
+  onHover?: (hovered: boolean) => void
 }
-
-type Threshold = { height: number; start: number; end: number }
 
 // How close to a line, in pixels, still grabs it.
 const GRAB_WIDTH = 10
@@ -19,42 +27,48 @@ const GRAB_WIDTH = 10
 const DIAMOND = 5
 
 /**
- * The curvature method's threshold, drawn on the −y'' axis: a line at its height across the
- * range it applies over, with that range's ends marked. Dragging the line changes the height,
- * and dragging either end moves it. The change is sent on release, and the bar goes back to the
- * analysis's threshold if it is refused.
+ * A curvature threshold, drawn on the −y'' axis: a line at its height across the range it applies
+ * over, with that range's ends marked. Dragging the line changes the height, and dragging either
+ * end moves it. The change is sent on release, and the bar goes back to the analysis's threshold
+ * if it is refused.
  */
-export function ThresholdBar({ settings, scale, onCommand }: Props) {
+export function ThresholdBar({
+  threshold: current,
+  limits = [-Infinity, Infinity],
+  scale,
+  highlighted = false,
+  title,
+  onHeightChange,
+  onRangeChange,
+  onHover,
+}: Props) {
   const { xScale, height, pointerToPixels } = usePlot()
 
   // The threshold as dragged, held until the analysis comes back with it.
   const [draft, setDraft] = useState<Threshold | null>(null)
-  const threshold = draft ?? {
-    height: settings.thresholdHeight,
-    start: settings.thresholdStart,
-    end: settings.thresholdEnd,
-  }
+  const threshold = draft ?? current
 
-  async function send(command: Command) {
-    await onCommand(command)
+  async function send(change: Promise<void>) {
+    await change
     setDraft(null)
   }
 
   const heightDrag = usePointerDrag({
     // As in the Mathematica preview, the threshold cannot be dragged below zero.
     onMove: (event) => setDraft({ ...threshold, height: Math.max(0, scale.invert(pointerToPixels(event).y)) }),
-    onRelease: () => draft && send({ kind: 'setThresholdHeight', value: draft.height }),
+    onRelease: () => draft && send(onHeightChange(draft.height)),
     onCancel: () => setDraft(null),
   })
-  // Each end stops at the other; the analysis refuses a range that starts where it ends.
+  // Each end stops at the other, since the analysis refuses a range that starts where it ends,
+  // and at its limit.
   const startDrag = usePointerDrag({
-    onMove: (event) => setDraft({ ...threshold, start: Math.min(xAt(event), threshold.end) }),
-    onRelease: () => draft && send({ kind: 'setThresholdDomain', start: draft.start, end: draft.end }),
+    onMove: (event) => setDraft({ ...threshold, start: clamp(xAt(event), limits[0], threshold.end) }),
+    onRelease: () => draft && send(onRangeChange(draft.start, draft.end)),
     onCancel: () => setDraft(null),
   })
   const endDrag = usePointerDrag({
-    onMove: (event) => setDraft({ ...threshold, end: Math.max(xAt(event), threshold.start) }),
-    onRelease: () => draft && send({ kind: 'setThresholdDomain', start: draft.start, end: draft.end }),
+    onMove: (event) => setDraft({ ...threshold, end: clamp(xAt(event), threshold.start, limits[1]) }),
+    onRelease: () => draft && send(onRangeChange(draft.start, draft.end)),
     onCancel: () => setDraft(null),
   })
 
@@ -68,8 +82,16 @@ export function ThresholdBar({ settings, scale, onCommand }: Props) {
   const diamond = (x: number) =>
     `M${x - DIAMOND},${y}L${x},${y - DIAMOND}L${x + DIAMOND},${y}L${x},${y + DIAMOND}Z`
 
+  const className = [
+    'curvature-threshold',
+    draft && 'curvature-threshold--dragging',
+    highlighted && 'curvature-threshold--highlighted',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <g className={draft ? 'curvature-threshold curvature-threshold--dragging' : 'curvature-threshold'}>
+    <g className={className} onPointerEnter={() => onHover?.(true)} onPointerLeave={() => onHover?.(false)}>
       <line className="curvature-threshold-edge" x1={x0} x2={x0} y1={0} y2={height} />
       <line className="curvature-threshold-edge" x1={x1} x2={x1} y1={0} y2={height} />
       <line className="curvature-threshold-line" x1={x0} x2={x1} y1={y} y2={y} />
@@ -103,8 +125,12 @@ export function ThresholdBar({ settings, scale, onCommand }: Props) {
         strokeWidth={GRAB_WIDTH}
         {...heightDrag.handlers}
       >
-        <title>Drag to change the curvature threshold</title>
+        <title>{title}</title>
       </line>
     </g>
   )
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
 }
