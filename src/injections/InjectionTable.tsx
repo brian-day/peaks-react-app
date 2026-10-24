@@ -68,9 +68,9 @@ export function InjectionTable({ injections, activeDataset, onSelectDataset }: P
                 >
                   <td className="numeric">{position + 1}</td>
                   <td>{injection.type && (TYPE_LABELS[injection.type] ?? injection.type)}</td>
-                  <td>{injection.sample ?? '–'}</td>
+                  <td className="injection-sample">{injection.sample ?? '–'}</td>
                   <td className="numeric">{optional(injection.injectionVolume)}</td>
-                  <td>{injection.gradient ?? '–'}</td>
+                  <td className="injection-gradient">{injection.gradient ?? '–'}</td>
                   <td className="numeric">{optional(injection.columnTemperature)}</td>
                   <td>{injection.columnPosition ?? '–'}</td>
                 </tr>

@@ -745,6 +745,22 @@ select {
   border-bottom: none;
 }
 
+/* Names wrap rather than widen the table past the page. The gradient's limit is a little more than
+   the longest name in the protocols tried so far, so typical names stay on one line. */
+.injection-table .injection-sample,
+.injection-table .injection-gradient {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.injection-table .injection-sample {
+  max-width: 40ch;
+}
+
+.injection-table .injection-gradient {
+  max-width: 56ch;
+}
+
 .injection-row--selectable {
   cursor: pointer;
 }
