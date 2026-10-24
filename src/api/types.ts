@@ -227,6 +227,22 @@ export type Overlays = {
   domains: [start: number, end: number][] | null
 }
 
+/** One injection's trace, thinned to about 2,000 points, for drawing behind the active dataset. */
+export type InjectionTrace = {
+  dataObject: string | null
+  /** The session's dataset for this trace, or `null` if it is not analyzed. */
+  datasetIndex: number | null
+  points: XY[]
+}
+
+/** Every injection's trace, mirroring DVA's `peaks_server/src/traces.rs`. */
+export type Traces = {
+  /** In injection order under a protocol, otherwise in dataset order. */
+  traces: InjectionTrace[]
+  /** Why any injection's trace is missing. */
+  warnings: string[]
+}
+
 /** The analysis, its table and its detection settings after an edit. */
 export type CommandResult = {
   analysis: AnalysisView

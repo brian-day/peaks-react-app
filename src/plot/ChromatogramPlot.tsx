@@ -13,6 +13,7 @@ import { Axis } from './Axis'
 import { AxisDragArea } from './AxisDragArea'
 import { DomainToolbar } from './DomainToolbar'
 import { InteractionLayer, type Mode } from './InteractionLayer'
+import { OtherTraces } from './OtherTraces'
 import { PlotContext, type PlotGeometry } from './plotContext'
 import { PlotToolbar } from './PlotToolbar'
 import { dataPath, dataTransform } from './scale'
@@ -20,6 +21,7 @@ import { withinDomains } from './domains'
 import { SecondDerivativeCurve } from './SecondDerivativeCurve'
 import { ThresholdBars } from './ThresholdBars'
 import { useOverlays } from './useOverlays'
+import { useTraces } from './useTraces'
 import { useWheelZoom } from './useWheelZoom'
 import {
   fitToVisible,
@@ -41,6 +43,8 @@ type Props = {
   sessionId: string
   dataset: DatasetSnapshot
   method: Method
+  /** Whether the session has traces other than this dataset's, as a protocol does. */
+  hasOtherTraces: boolean
   /** Sends an edit to the analysis, resolving once it has been applied or has failed. */
   onCommand: (command: Command) => Promise<void>
   /** The {@link peakKey} of the peak to highlight, whether hovered here or elsewhere. */
@@ -62,7 +66,15 @@ type Props = {
  * The zoom starts fully out and is kept as the analysis changes; give the plot a new `key` to
  * start over.
  */
-export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hoveredKey, onHoverPeak }: Props) {
+export function ChromatogramPlot({
+  sessionId,
+  dataset,
+  method,
+  hasOtherTraces,
+  onCommand,
+  hoveredKey,
+  onHoverPeak,
+}: Props) {
   const [chosenMode, setMode] = useState<Mode>('zoom')
   // Switching to a method that cannot add what the mode adds leaves dragging to zoom again.
   const addMode = addModeFor(method)
@@ -81,6 +93,10 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
   const [chosenDomains, setChosenDomains] = useState(true)
   const showDomains = hasSecondDerivative(method) && chosenDomains
   const showSecondDerivative = hasSecondDerivative(method) && chosenSecondDerivative
+  // The other injections' traces, fetched the first time they are shown.
+  const [chosenOtherTraces, setChosenOtherTraces] = useState(false)
+  const showOtherTraces = hasOtherTraces && chosenOtherTraces
+  const { traces: otherTraces, messages: otherTraceMessages } = useTraces(sessionId, showOtherTraces)
   const { overlays, errors: overlayErrors } = useOverlays(sessionId, showSecondDerivative, dataset.analysis)
   const showRightAxis = showSecondDerivative && overlays !== null
   const margin = showRightAxis ? { ...MARGIN, right: RIGHT_AXIS_MARGIN } : MARGIN
@@ -195,6 +211,9 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
         onModeChange={setMode}
         trace={showTrace}
         onTraceChange={setShowTrace}
+        hasOtherTraces={hasOtherTraces}
+        otherTraces={chosenOtherTraces}
+        onOtherTracesChange={setChosenOtherTraces}
         secondDerivative={chosenSecondDerivative}
         onSecondDerivativeChange={setChosenSecondDerivative}
         domains={chosenDomains}
@@ -219,7 +238,7 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
           onCommand={onCommand}
         />
       )}
-      <MessageList messages={overlayErrors} />
+      <MessageList messages={[...overlayErrors, ...(showOtherTraces ? otherTraceMessages : [])]} />
       <div ref={containerRef} className="plot">
         {/* Nothing to draw until the container has been measured. */}
         {width > 0 && (
@@ -298,6 +317,10 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
                   onHover={hover}
                 />
                 <g clipPath="url(#plot-area)">
+                  {/* Behind everything of the dataset being looked at. */}
+                  {showOtherTraces && otherTraces && (
+                    <OtherTraces traces={otherTraces} activeDataset={dataset.index} />
+                  )}
                   {showTrace && (
                     <AnalysisLayer
                       analysis={dataset.analysis}

@@ -24,6 +24,10 @@ type Props = {
   onModeChange: (mode: Mode) => void
   trace: boolean
   onTraceChange: (shown: boolean) => void
+  /** Whether there are other traces to show, as there are for a protocol; hides their toggle if not. */
+  hasOtherTraces: boolean
+  otherTraces: boolean
+  onOtherTracesChange: (shown: boolean) => void
   secondDerivative: boolean
   onSecondDerivativeChange: (shown: boolean) => void
   domains: boolean
@@ -32,8 +36,8 @@ type Props = {
 
 /**
  * Chooses the peak-picking method, what dragging across the plot does, and what is drawn: the
- * trace, and under the Curvature methods −y'' and the boundaries of the domains peaks are
- * detected in.
+ * trace, the other injections' traces, and under the Curvature methods −y'' and the boundaries of
+ * the domains peaks are detected in.
  */
 export function PlotToolbar({
   method,
@@ -42,6 +46,9 @@ export function PlotToolbar({
   onModeChange,
   trace,
   onTraceChange,
+  hasOtherTraces,
+  otherTraces,
+  onOtherTracesChange,
   secondDerivative,
   onSecondDerivativeChange,
   domains,
@@ -82,6 +89,17 @@ export function PlotToolbar({
           <span className="swatch swatch--trace" aria-hidden="true" />
           Trace
         </button>
+        {hasOtherTraces && (
+          <button
+            type="button"
+            title="The other injections' traces, faintly behind this one, to compare it with"
+            aria-pressed={otherTraces}
+            onClick={() => onOtherTracesChange(!otherTraces)}
+          >
+            <span className="swatch swatch--other-traces" aria-hidden="true" />
+            Other traces
+          </button>
+        )}
         {hasSecondDerivative(method) && (
           <button
             type="button"

@@ -6,6 +6,7 @@ import type {
   DatasetSnapshot,
   ObjectType,
   Overlays,
+  Traces,
 } from './types'
 
 /** A request that failed, with the messages explaining why. */
@@ -36,6 +37,11 @@ export function applyCommand(sessionId: string, command: Command): Promise<Comma
 /** The curves drawn over the trace, which exist only under the Curvature method. */
 export function getOverlays(sessionId: string, signal?: AbortSignal): Promise<Overlays> {
   return request('GET', `/api/sessions/${sessionId}/overlays`, { signal })
+}
+
+/** Every injection's trace, thinned; the first request downloads the injections not analyzed. */
+export function getTraces(sessionId: string, signal?: AbortSignal): Promise<Traces> {
+  return request('GET', `/api/sessions/${sessionId}/traces`, { signal })
 }
 
 async function request<T>(

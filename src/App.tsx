@@ -39,6 +39,7 @@ function App() {
             sessionId={state.session.sessionId}
             dataset={state.session.dataset}
             method={state.method}
+            hasOtherTraces={state.session.datasets.length > 1 || state.session.injectionTable !== null}
             onCommand={sendCommand}
             hoveredKey={hoveredKey}
             onHoverPeak={setHoveredKey}

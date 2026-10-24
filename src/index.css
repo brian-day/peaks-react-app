@@ -108,6 +108,16 @@ body {
 
 /* Data */
 
+/* Faint, so the active dataset's trace and peaks stay what the eye reads first. */
+.other-traces {
+  fill: none;
+  stroke: var(--excluded);
+  stroke-width: 1;
+  stroke-opacity: 0.6;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
 .trace {
   fill: none;
   stroke: var(--trace);
@@ -235,6 +245,10 @@ body {
 
 .swatch--trace {
   background: var(--trace);
+}
+
+.swatch--other-traces {
+  background: var(--excluded);
 }
 
 .swatch--second-derivative {
