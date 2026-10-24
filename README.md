@@ -1,32 +1,71 @@
-# React + TypeScript + Vite
+# Peaks Preview (React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+An exploratory web front end for `AnalyzePeaks` preview, as an alternative to the Mathematica
+notebook front end. It draws a chromatogram and its peaks, and edits the analysis through
+`peaks_server`, a small Rust HTTP server in the DVA repository that wraps `dva_lib`. The server
+downloads data from Constellation and holds the analysis; this app only presents it.
 
-Currently, two official plugins are available:
+This is proof-of-concept work, likely to be redesigned.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What it does
 
-## React Compiler
+- Opens an `Object[Data, Chromatography]`, or an HPLC or FPLC protocol, from Constellation.
+- Plots the trace with box zoom, pan, wheel zoom, and independent zoom of each axis.
+- Picks peaks by three methods:
+  - **Manual:** drag across a peak to add it, and drag its boundaries;
+  - **Curvature:** the existing curvature method, with its −y″ overlay and draggable threshold;
+  - **Curvature (vnext):** the new curvature pipeline, with any number of detection domains, each
+    with its own smoothing, threshold, baseline and exclusion settings. Domains can be drawn,
+    dragged and snapped together on the plot.
+- Lists the peaks in a table whose columns can be chosen, grouped by domain under vnext, and
+  linked to the plot by hover.
+- For protocols, shows the injection table. Clicking an analysed injection makes it the one being
+  viewed, and every other injection's trace can be shown faintly behind it.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Running it
 
-## Expanding the Oxlint configuration
+You need Node (via `fnm` here), and the DVA repository for `peaks_server`.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+1. Start the server from DVA, in release mode, since vnext is about 45 times slower in a debug
+   build:
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+   ```sh
+   export CONSTELLATION_USERNAME=…  CONSTELLATION_PASSWORD=…   # CONSTELLATION_DOMAIN defaults to stage
+   cargo run --release -p peaks_server                         # listens on 127.0.0.1:3001
+   ```
+
+2. Start this app:
+
+   ```sh
+   npm install
+   npm run dev        # http://localhost:5173, proxying /api to peaks_server
+   ```
+
+3. Choose a type, enter an ID and press Analyze. Two IDs on stage that work:
+   - `id:M8n3rxPqa87E`, a chromatography data object, which is the default in the form;
+   - `id:01G6nvDbLz6r`, an HPLC protocol with 12 injections, 6 of them samples.
+
+## Scripts
+
+| Command         | What it does                                            |
+| --------------- | ------------------------------------------------------- |
+| `npm run dev`   | Vite dev server with hot reload                         |
+| `npm run build` | Type-check (`tsc -b`) and build into `dist/`            |
+| `npm run lint`  | oxlint                                                  |
+| `npm test`      | Vitest; tests cover the pure logic, not the components  |
+
+## Layout
+
+```
+src/
+  api/          wire types (mirroring peaks_server's JSON by hand) and the fetch client
+  hooks/        useSession (server state, edits, switching datasets), useElementSize
+  plot/         the chromatogram: SVG layers, axes, interaction, −y″, threshold bars, viewport maths
+  settings/     peak detection settings: the domain table, its per-method edits, number fields
+  table/        the peaks table, its column definitions and picker, grouping by domain
+  injections/   a protocol's injection table
+  components/   small shared pieces
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The plot is plain SVG with `d3-scale`, with no chart library. Long paths are built once in data
+coordinates and moved with an SVG transform, so panning stays fast.
