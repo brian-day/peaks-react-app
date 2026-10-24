@@ -1,5 +1,5 @@
 import { scaleLinear } from 'd3-scale'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { addModeFor, hasSecondDerivative } from '../api/methods'
 import { allPeaks, peakKey } from '../api/peakIdentity'
 import type { Command, DatasetSnapshot, Method, Point } from '../api/types'
@@ -45,6 +45,8 @@ type Props = {
   method: Method
   /** Whether the session has traces other than this dataset's, as a protocol does. */
   hasOtherTraces: boolean
+  /** Shown between the toolbar and the detection settings, such as a protocol's injections. */
+  belowToolbar?: ReactNode
   /** Sends an edit to the analysis, resolving once it has been applied or has failed. */
   onCommand: (command: Command) => Promise<void>
   /** The {@link peakKey} of the peak to highlight, whether hovered here or elsewhere. */
@@ -71,6 +73,7 @@ export function ChromatogramPlot({
   dataset,
   method,
   hasOtherTraces,
+  belowToolbar,
   onCommand,
   hoveredKey,
   onHoverPeak,
@@ -222,6 +225,7 @@ export function ChromatogramPlot({
       {method === 'CurvatureVnext' && dataset.vnextSettings && (
         <DomainToolbar domains={dataset.vnextSettings.domains} onCommand={onCommand} />
       )}
+      {belowToolbar}
       {method === 'Curvature' && dataset.curvatureSettings && (
         <DetectionSettings
           settings={dataset.curvatureSettings}

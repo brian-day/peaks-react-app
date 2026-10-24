@@ -702,10 +702,6 @@ body {
 
 /* Injections */
 
-.injection-table {
-  margin-bottom: 12px;
-}
-
 .injection-table tbody tr:last-child td {
   border-bottom: none;
 }

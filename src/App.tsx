@@ -21,17 +21,6 @@ function App() {
       {state.status === 'loaded' && (
         <>
           <MessageList messages={[...state.session.messages, ...state.commandErrors]} />
-          {state.session.injectionTable && (
-            <InjectionTable
-              injections={state.session.injectionTable}
-              activeDataset={state.session.dataset.index}
-              onSelectDataset={(datasetIndex) => {
-                // The hovered peak belongs to the dataset being left.
-                setHoveredKey(null)
-                selectDataset(datasetIndex)
-              }}
-            />
-          )}
           {/* A new key per session gives each one a fresh plot, so a new analysis starts zoomed out.
               Switching datasets keeps the plot, and its zoom, so injections compare at one scale. */}
           <ChromatogramPlot
@@ -40,6 +29,19 @@ function App() {
             dataset={state.session.dataset}
             method={state.method}
             hasOtherTraces={state.session.datasets.length > 1 || state.session.injectionTable !== null}
+            belowToolbar={
+              state.session.injectionTable && (
+                <InjectionTable
+                  injections={state.session.injectionTable}
+                  activeDataset={state.session.dataset.index}
+                  onSelectDataset={(datasetIndex) => {
+                    // The hovered peak belongs to the dataset being left.
+                    setHoveredKey(null)
+                    selectDataset(datasetIndex)
+                  }}
+                />
+              )
+            }
             onCommand={sendCommand}
             hoveredKey={hoveredKey}
             onHoverPeak={setHoveredKey}
