@@ -64,19 +64,14 @@ export function PlotToolbar({
         ))}
       </ButtonGroup>
       <ButtonGroup label="Drag to">
-        {MODES.map(({ mode: m, label, hint }) => (
-          <button
-            key={m}
-            type="button"
-            title={hint}
-            aria-pressed={m === mode}
-            // Each adding mode only means something under its own method.
-            disabled={(m === 'addPeak' || m === 'addDomain') && m !== addModeFor(method)}
-            onClick={() => onModeChange(m)}
-          >
-            {label}
-          </button>
-        ))}
+        {MODES
+          // Each adding mode only means something under its own method, so it is shown only there.
+          .filter(({ mode: m }) => (m !== 'addPeak' && m !== 'addDomain') || m === addModeFor(method))
+          .map(({ mode: m, label, hint }) => (
+            <button key={m} type="button" title={hint} aria-pressed={m === mode} onClick={() => onModeChange(m)}>
+              {label}
+            </button>
+          ))}
       </ButtonGroup>
       <ButtonGroup label="Show">
         {/* Each swatch doubles as its curve's legend. */}
