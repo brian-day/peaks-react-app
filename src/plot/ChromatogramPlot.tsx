@@ -15,6 +15,7 @@ import { InteractionLayer, type Mode } from './InteractionLayer'
 import { PlotContext, type PlotGeometry } from './plotContext'
 import { PlotToolbar } from './PlotToolbar'
 import { dataPath, dataTransform } from './scale'
+import { withinDomains } from './domains'
 import { SecondDerivativeCurve } from './SecondDerivativeCurve'
 import { ThresholdBar } from './ThresholdBar'
 import { useOverlays } from './useOverlays'
@@ -92,10 +93,18 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
   const { full, minSpan } = useMemo(() => traceBounds(dataset.trace), [dataset.trace])
   const [view, setView] = useState<PlotView>({ ...full, y2: null })
 
+  // −y'' only where detection happens: within the domains under Curvature (vnext), everywhere
+  // otherwise. The axis fits to these parts too, so a gap's curvature cannot set its scale.
+  const secondDerivativeStretches = useMemo(
+    () => overlays && withinDomains(overlays.negativeSecondDerivative, overlays.domains),
+    [overlays],
+  )
+  const secondDerivativePoints = useMemo(() => secondDerivativeStretches?.flat() ?? null, [secondDerivativeStretches])
+
   // The whole −y'' curve's range: where its axis starts and is reset to, though not a limit on it.
   const secondFull = useMemo(
-    () => overlays && fitToVisible(overlays.negativeSecondDerivative, [-Infinity, Infinity]),
-    [overlays],
+    () => secondDerivativePoints && fitToVisible(secondDerivativePoints, [-Infinity, Infinity]),
+    [secondDerivativePoints],
   )
   const secondary = useMemo<SecondaryAxis | null>(
     () => (showRightAxis && secondFull ? { whole: secondFull, minSpan: (secondFull[1] - secondFull[0]) / 10000 } : null),
@@ -251,7 +260,9 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
                     domain={secondView}
                     full={UNBOUNDED}
                     onChange={(y2) => changeAxis('y2', y2)}
-                    onReset={() => changeAxis('y2', fitToVisible(overlays.negativeSecondDerivative, view.x) ?? secondFull)}
+                    onReset={() =>
+                      changeAxis('y2', (secondDerivativePoints && fitToVisible(secondDerivativePoints, view.x)) ?? secondFull)
+                    }
                     title="Drag to pan −y″, scroll to zoom it, double-click to fit it to the curve in view"
                   />
                 )}
@@ -284,7 +295,7 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
                   )}
                   {showSecondDerivative && overlays && (
                     <SecondDerivativeCurve
-                      points={overlays.negativeSecondDerivative}
+                      stretches={secondDerivativeStretches ?? []}
                       scale={secondDerivativeScale}
                     />
                   )}
