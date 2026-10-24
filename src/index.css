@@ -488,6 +488,67 @@ body {
   font-size: 0.85rem;
 }
 
+/* Curvature (vnext) settings */
+
+.vnext-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.domain-table {
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.domain-table th,
+.domain-table td {
+  padding: 4px 8px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.domain-table th {
+  font-weight: 600;
+  vertical-align: bottom;
+  background: var(--background);
+}
+
+.domain-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.domain-table .numeric {
+  text-align: right;
+}
+
+.domain-table .units {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.remove-domain {
+  font: inherit;
+  line-height: 1;
+  padding: 2px 6px;
+}
+
+/* Hidden from sight but read by screen readers. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Toolbar */
 
 .plot-panel {

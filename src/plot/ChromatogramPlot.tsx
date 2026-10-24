@@ -6,6 +6,7 @@ import type { Command, DatasetSnapshot, Method, Point } from '../api/types'
 import { MessageList } from '../components/MessageList'
 import { useElementSize } from '../hooks/useElementSize'
 import { DetectionSettings } from '../settings/DetectionSettings'
+import { VnextDetectionSettings } from '../settings/VnextDetectionSettings'
 import { peakAt } from './hitTest'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
@@ -182,6 +183,13 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
       {method === 'Curvature' && dataset.curvatureSettings && (
         <DetectionSettings
           settings={dataset.curvatureSettings}
+          units={{ x: dataset.xUnits, y: dataset.yUnits }}
+          onCommand={onCommand}
+        />
+      )}
+      {method === 'CurvatureVnext' && dataset.vnextSettings && (
+        <VnextDetectionSettings
+          settings={dataset.vnextSettings}
           units={{ x: dataset.xUnits, y: dataset.yUnits }}
           onCommand={onCommand}
         />

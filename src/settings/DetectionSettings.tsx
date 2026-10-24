@@ -1,6 +1,6 @@
-import { useId } from 'react'
-import type { Command, CurvatureSettings, SmoothingMethod } from '../api/types'
+import type { Command, CurvatureSettings } from '../api/types'
 import { NumberField } from './NumberField'
+import { SmoothingMethodSelect } from './SmoothingMethodSelect'
 
 type Props = {
   settings: CurvatureSettings
@@ -8,18 +8,12 @@ type Props = {
   onCommand: (command: Command) => Promise<void>
 }
 
-const SMOOTHING_METHODS: { method: SmoothingMethod; label: string }[] = [
-  { method: 'Gaussian', label: 'Gaussian' },
-  { method: 'SavitzkyGolay', label: 'Savitzky–Golay' },
-]
-
 /**
  * The Curvature method's peak detection settings, grouped by the stage of detection they affect.
  * Every change re-runs the detection, and the peaks, table and −y'' follow.
  */
 export function DetectionSettings({ settings, units, onCommand }: Props) {
   const s = settings
-  const methodId = useId()
 
   return (
     // One collapsible section for all three groups, so they open and close together and a
@@ -29,22 +23,10 @@ export function DetectionSettings({ settings, units, onCommand }: Props) {
       <div className="detection-settings-groups">
         <fieldset>
           <legend>Detection</legend>
-          <div className="setting">
-            <label htmlFor={methodId}>Smoothing</label>
-            <select
-              id={methodId}
-              value={s.smoothingMethod}
-              onChange={(event) =>
-                onCommand({ kind: 'setSmoothingMethod', method: event.target.value as SmoothingMethod })
-              }
-            >
-              {SMOOTHING_METHODS.map(({ method, label }) => (
-                <option key={method} value={method}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <SmoothingMethodSelect
+            value={s.smoothingMethod}
+            onChange={(method) => onCommand({ kind: 'setSmoothingMethod', method })}
+          />
           <div className="setting">
             <NumberField
               label="Width"

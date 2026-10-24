@@ -5,6 +5,8 @@ type Props = {
   label: string
   value: number
   units?: string | null
+  /** Keeps the label for screen readers but hides it, where a column header already names it. */
+  hideLabel?: boolean
   /** Called with the new value on Enter or on leaving the field, if it changed and is a number. */
   onCommit: (value: number) => void
 }
@@ -15,7 +17,7 @@ type Props = {
  * Each value it sends re-runs the peak detection, so it waits for Enter or for the user to leave
  * the field rather than sending every keystroke. Escape puts back the value in effect.
  */
-export function NumberField({ label, value, units, onCommit }: Props) {
+export function NumberField({ label, value, units, hideLabel, onCommit }: Props) {
   const id = useId()
   // What the user has typed, or `null` while not editing, when the value in effect is shown.
   const [draft, setDraft] = useState<string | null>(null)
@@ -29,7 +31,9 @@ export function NumberField({ label, value, units, onCommit }: Props) {
 
   return (
     <div className="number-field">
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className={hideLabel ? 'visually-hidden' : undefined}>
+        {label}
+      </label>
       <input
         id={id}
         type="text"
