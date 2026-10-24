@@ -1,9 +1,8 @@
-import type { ColumnKey } from '../api/types'
-import { COLUMNS, DEFAULT_COLUMNS } from './columns'
+import { COLUMNS, DEFAULT_COLUMNS, type TableColumnKey } from './columns'
 
 type Props = {
-  shown: ReadonlySet<ColumnKey>
-  onChange: (shown: Set<ColumnKey>) => void
+  shown: ReadonlySet<TableColumnKey>
+  onChange: (shown: Set<TableColumnKey>) => void
 }
 
 /**
@@ -13,7 +12,7 @@ type Props = {
  * script of ours.
  */
 export function ColumnPicker({ shown, onChange }: Props) {
-  function toggle(key: ColumnKey) {
+  function toggle(key: TableColumnKey) {
     const next = new Set(shown)
     if (next.has(key)) next.delete(key)
     else next.add(key)

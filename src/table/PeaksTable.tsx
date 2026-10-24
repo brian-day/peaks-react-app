@@ -1,9 +1,17 @@
 import { useMemo, useState } from 'react'
 import { allPeaks, peakKey } from '../api/peakIdentity'
-import type { AnalysisView, ColumnKey, PeakRow, PeakView } from '../api/types'
+import type { AnalysisView, PeakRow, PeakView } from '../api/types'
 import { formatNumber } from '../format'
 import { ColumnPicker } from './ColumnPicker'
-import { COLUMNS, DEFAULT_COLUMNS, formatCell, type AxisUnits, type ColumnDefinition } from './columns'
+import {
+  cellText,
+  COLUMNS,
+  DEFAULT_COLUMNS,
+  isNumeric,
+  type AxisUnits,
+  type ColumnDefinition,
+  type TableColumnKey,
+} from './columns'
 import { groupByDomain } from './groups'
 
 type Props = {
@@ -19,19 +27,13 @@ type Props = {
   onHoverPeak: (key: string | null) => void
 }
 
-const KIND_LABELS: Record<PeakRow['kind'], string | null> = {
-  included: null,
-  excluded: 'Excluded',
-  unexpected: 'Unexpected',
-}
-
 /**
  * The peaks' properties, one row per peak, with a choice of which columns to show. Under
  * Curvature (vnext) the peaks are grouped by the domain they were found in, under a heading
  * giving its range that collapses the group, and a domain that found none says so.
  */
 export function PeaksTable({ rows, analysis, units, domains, hoveredKey, onHoverPeak }: Props) {
-  const [shown, setShown] = useState<ReadonlySet<ColumnKey>>(() => new Set(DEFAULT_COLUMNS))
+  const [shown, setShown] = useState<ReadonlySet<TableColumnKey>>(() => new Set(DEFAULT_COLUMNS))
   const columns = COLUMNS.filter((column) => shown.has(column.key))
 
   const peaksByKey = useMemo(
@@ -49,8 +51,8 @@ export function PeaksTable({ rows, analysis, units, domains, hoveredKey, onHover
     })
 
   const groups = useMemo(() => domains && groupByDomain(rows, domains.length), [rows, domains])
-  // Label, Parent and Status, then the chosen columns.
-  const columnCount = 3 + columns.length
+  // A heading spans the whole table, and still one column with every column hidden.
+  const columnCount = Math.max(1, columns.length)
 
   const renderRow = (row: PeakRow) => {
     const key = peakKey(row.id)
@@ -80,13 +82,14 @@ export function PeaksTable({ rows, analysis, units, domains, hoveredKey, onHover
           <table>
             <thead>
               <tr>
-                <th>Label</th>
-                <th>Parent</th>
-                <th>Status</th>
                 {columns.map((column) => {
                   const columnUnits = column.units(units)
                   return (
-                    <th key={column.key} className="numeric" title={column.description}>
+                    <th
+                      key={column.key}
+                      className={isNumeric(column.key) ? 'numeric' : undefined}
+                      title={column.description}
+                    >
                       {column.label}
                       {columnUnits && <span className="units">{columnUnits}</span>}
                     </th>
@@ -146,21 +149,22 @@ type RowProps = {
 
 /** One peak's row. */
 function Row({ row, peak, columns, highlighted, onHover }: RowProps) {
-  const kindLabel = KIND_LABELS[row.kind]
   return (
     <tr
-      className={['peak-row', kindLabel && 'peak-row--muted', highlighted && 'peak-row--highlighted']
+      className={[
+        'peak-row',
+        // Excluded and unexpected peaks are greyed, whether or not their status is shown.
+        row.kind !== 'included' && 'peak-row--muted',
+        highlighted && 'peak-row--highlighted',
+      ]
         .filter(Boolean)
         .join(' ')}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
     >
-      <td>{peak?.label || '–'}</td>
-      <td>{peak?.isParent ? '✓' : ''}</td>
-      <td>{kindLabel ?? ''}</td>
       {columns.map((column) => (
-        <td key={column.key} className="numeric">
-          {formatCell(row.values[column.key])}
+        <td key={column.key} className={isNumeric(column.key) ? 'numeric' : undefined}>
+          {cellText(column.key, row, peak)}
         </td>
       ))}
     </tr>
