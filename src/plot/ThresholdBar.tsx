@@ -11,6 +11,10 @@ type Props = {
   limits?: readonly [min: number, max: number]
   /** The −y'' axis's scale, which the threshold's height is on. */
   scale: Scale
+  /** Whether to draw the threshold itself, which only means something against −y''. */
+  showBar: boolean
+  /** Whether to draw the range's ends as lines the height of the plot. */
+  showBoundaries: boolean
   /** Drawn more heavily, as when its row in the domain table is hovered. */
   highlighted?: boolean
   /** Shown while the pointer rests on the line. */
@@ -27,15 +31,18 @@ const GRAB_WIDTH = 10
 const DIAMOND = 5
 
 /**
- * A curvature threshold, drawn on the −y'' axis: a line at its height across the range it applies
- * over, with that range's ends marked. Dragging the line changes the height, and dragging either
- * end moves it. The change is sent on release, and the bar goes back to the analysis's threshold
- * if it is refused.
+ * A curvature threshold and the range it applies over, each drawn when asked for: the threshold as
+ * a line at its height on the −y'' axis, with diamonds at its ends, and the range's boundaries as
+ * lines the height of the plot. Dragging the line changes the height, and dragging a diamond or a
+ * boundary moves that end. The change is sent on release, and everything goes back to the
+ * analysis's threshold if it is refused.
  */
 export function ThresholdBar({
   threshold: current,
   limits = [-Infinity, Infinity],
   scale,
+  showBar,
+  showBoundaries,
   highlighted = false,
   title,
   onHeightChange,
@@ -92,41 +99,51 @@ export function ThresholdBar({
 
   return (
     <g className={className} onPointerEnter={() => onHover?.(true)} onPointerLeave={() => onHover?.(false)}>
-      <line className="curvature-threshold-edge" x1={x0} x2={x0} y1={0} y2={height} />
-      <line className="curvature-threshold-edge" x1={x1} x2={x1} y1={0} y2={height} />
-      <line className="curvature-threshold-line" x1={x0} x2={x1} y1={y} y2={y} />
-      <path className="curvature-threshold-end" d={diamond(x0) + diamond(x1)} />
-
-      {/* Wider, invisible copies of the lines, which take the pointer. */}
-      <line
-        className="curvature-threshold-grab curvature-threshold-grab--edge"
-        x1={x0}
-        x2={x0}
-        y1={0}
-        y2={height}
-        strokeWidth={GRAB_WIDTH}
-        {...startDrag.handlers}
-      />
-      <line
-        className="curvature-threshold-grab curvature-threshold-grab--edge"
-        x1={x1}
-        x2={x1}
-        y1={0}
-        y2={height}
-        strokeWidth={GRAB_WIDTH}
-        {...endDrag.handlers}
-      />
-      <line
-        className="curvature-threshold-grab curvature-threshold-grab--line"
-        x1={x0}
-        x2={x1}
-        y1={y}
-        y2={y}
-        strokeWidth={GRAB_WIDTH}
-        {...heightDrag.handlers}
-      >
-        <title>{title}</title>
-      </line>
+      {showBoundaries && (
+        <>
+          <line className="curvature-threshold-edge" x1={x0} x2={x0} y1={0} y2={height} />
+          <line className="curvature-threshold-edge" x1={x1} x2={x1} y1={0} y2={height} />
+          {/* Wider, invisible copies of the boundaries, which take the pointer. */}
+          <line
+            className="curvature-threshold-grab curvature-threshold-grab--edge"
+            x1={x0}
+            x2={x0}
+            y1={0}
+            y2={height}
+            strokeWidth={GRAB_WIDTH}
+            {...startDrag.handlers}
+          />
+          <line
+            className="curvature-threshold-grab curvature-threshold-grab--edge"
+            x1={x1}
+            x2={x1}
+            y1={0}
+            y2={height}
+            strokeWidth={GRAB_WIDTH}
+            {...endDrag.handlers}
+          />
+        </>
+      )}
+      {showBar && (
+        <>
+          <line className="curvature-threshold-line" x1={x0} x2={x1} y1={y} y2={y} />
+          {/* A wider, invisible copy of the line, which takes the pointer. */}
+          <line
+            className="curvature-threshold-grab curvature-threshold-grab--line"
+            x1={x0}
+            x2={x1}
+            y1={y}
+            y2={y}
+            strokeWidth={GRAB_WIDTH}
+            {...heightDrag.handlers}
+          >
+            <title>{title}</title>
+          </line>
+          {/* The diamonds move the ends too, so the range can be changed with its boundaries hidden. */}
+          <path className="curvature-threshold-end" d={diamond(x0)} {...startDrag.handlers} />
+          <path className="curvature-threshold-end" d={diamond(x1)} {...endDrag.handlers} />
+        </>
+      )}
     </g>
   )
 }

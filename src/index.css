@@ -197,7 +197,8 @@ body {
 
 .curvature-threshold-end {
   fill: var(--second-derivative);
-  pointer-events: none;
+  cursor: ew-resize;
+  touch-action: none;
 }
 
 .curvature-threshold--dragging .curvature-threshold-line,
@@ -238,6 +239,11 @@ body {
 
 .swatch--second-derivative {
   background: var(--second-derivative);
+}
+
+/* Dashed, as the boundaries are. */
+.swatch--domains {
+  background: repeating-linear-gradient(90deg, var(--second-derivative) 0 2px, transparent 2px 4px);
 }
 
 /* Interaction */

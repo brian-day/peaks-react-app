@@ -75,6 +75,10 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
   // Hiding the trace hides the peaks drawn on it too, leaving −y'' and its threshold to read on
   // their own. The table still lists the peaks.
   const [showTrace, setShowTrace] = useState(true)
+  // The domains' boundaries are shown from the start, so a domain just added can be seen. Drawn
+  // apart from −y'', they place the peaks on the trace too.
+  const [chosenDomains, setChosenDomains] = useState(true)
+  const showDomains = hasSecondDerivative(method) && chosenDomains
   const showSecondDerivative = hasSecondDerivative(method) && chosenSecondDerivative
   const { overlays, errors: overlayErrors } = useOverlays(sessionId, showSecondDerivative, dataset.analysis)
   const showRightAxis = showSecondDerivative && overlays !== null
@@ -192,6 +196,8 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
         onTraceChange={setShowTrace}
         secondDerivative={chosenSecondDerivative}
         onSecondDerivativeChange={setChosenSecondDerivative}
+        domains={chosenDomains}
+        onDomainsChange={setChosenDomains}
       />
       {method === 'Curvature' && dataset.curvatureSettings && (
         <DetectionSettings
@@ -306,12 +312,15 @@ export function ChromatogramPlot({ sessionId, dataset, method, onCommand, hovere
                       scale={secondDerivativeScale}
                     />
                   )}
-                  {/* On the −y'' axis, so only while −y'' is drawn to read it against. */}
-                  {showSecondDerivative && overlays && (
+                  {/* The thresholds are on the −y'' axis, so only while −y'' is drawn to read them
+                      against; the boundaries need no axis. */}
+                  {((showSecondDerivative && overlays) || showDomains) && (
                     <ThresholdBars
                       curvatureSettings={dataset.curvatureSettings}
                       vnextSettings={dataset.vnextSettings}
                       scale={secondDerivativeScale}
+                      showBars={showSecondDerivative && overlays !== null}
+                      showBoundaries={showDomains}
                       hoveredDomain={hoveredDomain}
                       onHoverDomain={setHoveredDomain}
                       onCommand={onCommand}

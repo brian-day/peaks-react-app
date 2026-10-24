@@ -10,6 +10,10 @@ type Props = {
   vnextSettings: VnextSettings | null
   /** The −y'' axis's scale. */
   scale: Scale
+  /** Whether to draw the thresholds, while −y'' is drawn to read them against. */
+  showBars: boolean
+  /** Whether to draw the boundaries of the ranges they apply over. */
+  showBoundaries: boolean
   /** The domain whose bar to highlight, by its index. */
   hoveredDomain: number | null
   onHoverDomain: (domainIndex: number | null) => void
@@ -17,13 +21,16 @@ type Props = {
 }
 
 /**
- * The thresholds of whichever Curvature method is active: Curvature's one, or one per domain under
- * Curvature (vnext), each of whose ends stops at its neighbours.
+ * The thresholds of whichever Curvature method is active, and the boundaries of the ranges they
+ * apply over: Curvature's one, or one per domain under Curvature (vnext), each of whose ends stops
+ * at its neighbours.
  */
 export function ThresholdBars({
   curvatureSettings,
   vnextSettings,
   scale,
+  showBars,
+  showBoundaries,
   hoveredDomain,
   onHoverDomain,
   onCommand,
@@ -37,6 +44,8 @@ export function ThresholdBars({
           end: curvatureSettings.thresholdEnd,
         }}
         scale={scale}
+        showBar={showBars}
+        showBoundaries={showBoundaries}
         title="Drag to change the curvature threshold"
         onHeightChange={(value) => onCommand({ kind: 'setThresholdHeight', value })}
         onRangeChange={(start, end) => onCommand({ kind: 'setThresholdDomain', start, end })}
@@ -53,6 +62,8 @@ export function ThresholdBars({
       threshold={{ height: domain.threshold, start: domain.start, end: domain.end }}
       limits={neighbourLimits(domains, domainIndex)}
       scale={scale}
+      showBar={showBars}
+      showBoundaries={showBoundaries}
       highlighted={domainIndex === hoveredDomain}
       title={`Drag to change domain ${domainIndex + 1}'s curvature threshold`}
       onHeightChange={(value) => onCommand({ kind: 'setDomainThreshold', domainIndex, value })}

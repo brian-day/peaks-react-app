@@ -25,11 +25,14 @@ type Props = {
   onTraceChange: (shown: boolean) => void
   secondDerivative: boolean
   onSecondDerivativeChange: (shown: boolean) => void
+  domains: boolean
+  onDomainsChange: (shown: boolean) => void
 }
 
 /**
- * Chooses the peak-picking method, what dragging across the plot does, and which curves are
- * drawn: the trace, and under the Curvature methods −y''.
+ * Chooses the peak-picking method, what dragging across the plot does, and what is drawn: the
+ * trace, and under the Curvature methods −y'' and the boundaries of the domains peaks are
+ * detected in.
  */
 export function PlotToolbar({
   method,
@@ -40,6 +43,8 @@ export function PlotToolbar({
   onTraceChange,
   secondDerivative,
   onSecondDerivativeChange,
+  domains,
+  onDomainsChange,
 }: Props) {
   return (
     <div className="plot-toolbar">
@@ -85,6 +90,17 @@ export function PlotToolbar({
           >
             <span className="swatch swatch--second-derivative" aria-hidden="true" />
             −y″
+          </button>
+        )}
+        {hasSecondDerivative(method) && (
+          <button
+            type="button"
+            title="Where each domain starts and ends; drag a boundary to move it"
+            aria-pressed={domains}
+            onClick={() => onDomainsChange(!domains)}
+          >
+            <span className="swatch swatch--domains" aria-hidden="true" />
+            Domains
           </button>
         )}
       </ButtonGroup>
