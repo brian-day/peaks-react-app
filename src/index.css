@@ -601,7 +601,9 @@ select {
 .domain-table th,
 .domain-table td {
   padding: 4px 8px;
-  text-align: left;
+  /* Centred, headings and fields alike, so each field sits squarely under its heading; the
+     numbers inside the fields stay right-aligned. */
+  text-align: center;
   white-space: nowrap;
   border-bottom: 1px solid var(--border);
 }
@@ -620,8 +622,25 @@ select {
   background: color-mix(in srgb, var(--second-derivative) 12%, var(--surface));
 }
 
-.domain-table .numeric {
-  text-align: right;
+.domain-table .number-field {
+  justify-content: center;
+}
+
+/* The small headings over each run of related columns. */
+.domain-table-groups th {
+  padding-top: 2px;
+  padding-bottom: 0;
+  border-bottom: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* A thin line down the table where each group starts. */
+.domain-table .group-start {
+  border-left: 1px solid var(--border);
 }
 
 .domain-table .units {

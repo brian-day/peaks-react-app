@@ -11,34 +11,154 @@ type Props = {
   onCommand: (command: Command) => Promise<void>
 }
 
+/** One of a domain's settings: how it is headed, shown and changed. */
+type DomainColumn = {
+  /** The heading over a run of related columns, such as `Baseline`. */
+  group: string
+  label: string
+  /** How a screen reader names the field, after `Domain 2 `. */
+  name: string
+  units: string
+  value: (domain: DomainSettings) => number
+  /** The edit that sets this setting of the domain at `domainIndex` to `value`. */
+  command: (domainIndex: number, domain: DomainSettings, value: number) => Command
+}
+
+function domainColumns(units: Props['units']): DomainColumn[] {
+  return [
+    {
+      group: 'Range',
+      label: 'Start',
+      name: 'start',
+      units: units.x,
+      value: (domain) => domain.start,
+      command: (domainIndex, domain, start) => ({ kind: 'setDomainRange', domainIndex, start, end: domain.end }),
+    },
+    {
+      group: 'Range',
+      label: 'End',
+      name: 'end',
+      units: units.x,
+      value: (domain) => domain.end,
+      command: (domainIndex, domain, end) => ({ kind: 'setDomainRange', domainIndex, start: domain.start, end }),
+    },
+    {
+      group: 'Smoothing',
+      label: 'Width',
+      name: 'smoothing',
+      units: units.x,
+      value: (domain) => domain.smoothing,
+      command: (domainIndex, _, value) => ({ kind: 'setDomainSmoothing', domainIndex, value }),
+    },
+    {
+      group: 'Smoothing',
+      label: 'Threshold',
+      name: 'threshold',
+      units: `${units.y}/${units.x}²`,
+      value: (domain) => domain.threshold,
+      command: (domainIndex, _, value) => ({ kind: 'setDomainThreshold', domainIndex, value }),
+    },
+    {
+      group: 'Baseline',
+      label: 'Liftoff',
+      name: 'liftoff',
+      units: '%',
+      value: (domain) => domain.liftOffPercent,
+      command: (domainIndex, domain, liftOffPercent) => ({
+        kind: 'setDomainLiftOffTouchDown',
+        domainIndex,
+        liftOffPercent,
+        touchDownPercent: domain.touchDownPercent,
+      }),
+    },
+    {
+      group: 'Baseline',
+      label: 'Touchdown',
+      name: 'touchdown',
+      units: '%',
+      value: (domain) => domain.touchDownPercent,
+      command: (domainIndex, domain, touchDownPercent) => ({
+        kind: 'setDomainLiftOffTouchDown',
+        domainIndex,
+        liftOffPercent: domain.liftOffPercent,
+        touchDownPercent,
+      }),
+    },
+    {
+      group: 'Exclusions',
+      label: 'Min area',
+      name: 'minimum area',
+      units: `${units.y}·${units.x}`,
+      value: (domain) => domain.minArea,
+      command: (domainIndex, domain, area) => ({
+        kind: 'setDomainMinimumPeakSize',
+        domainIndex,
+        area,
+        height: domain.minHeight,
+      }),
+    },
+    {
+      group: 'Exclusions',
+      label: 'Min height',
+      name: 'minimum height',
+      units: units.y,
+      value: (domain) => domain.minHeight,
+      command: (domainIndex, domain, height) => ({
+        kind: 'setDomainMinimumPeakSize',
+        domainIndex,
+        area: domain.minArea,
+        height,
+      }),
+    },
+  ]
+}
+
+/** The columns' groups, in order, with how many columns each spans. */
+function groupRuns(columns: DomainColumn[]): { group: string; span: number }[] {
+  const runs: { group: string; span: number }[] = []
+  for (const { group } of columns) {
+    const last = runs.at(-1)
+    if (last?.group === group) last.span += 1
+    else runs.push({ group, span: 1 })
+  }
+  return runs
+}
+
+/** Whether a column starts its group, and so has the line dividing it from the group before. */
+function startsGroup(columns: DomainColumn[], index: number) {
+  return columns[index - 1]?.group !== columns[index].group
+}
+
 /**
  * Curvature (vnext)'s domains, one row each in order of their start, with every setting a domain
- * has of its own. Rows are numbered as the commands number domains.
+ * has of its own, grouped under headings as the Curvature method's settings are. Rows are
+ * numbered as the commands number domains.
  */
 export function DomainTable({ domains, units, hoveredDomain, onHoverDomain, onCommand }: Props) {
-  const columns = [
-    { label: 'Start', units: units.x },
-    { label: 'End', units: units.x },
-    { label: 'Smoothing', units: units.x },
-    { label: 'Threshold', units: `${units.y}/${units.x}²` },
-    { label: 'Liftoff', units: '%' },
-    { label: 'Touchdown', units: '%' },
-    { label: 'Min area', units: `${units.y}·${units.x}` },
-    { label: 'Min height', units: units.y },
-  ]
+  const columns = domainColumns(units)
+  const groupClass = (index: number) => (startsGroup(columns, index) ? 'group-start' : undefined)
 
   return (
     <table className="domain-table">
       <thead>
+        <tr className="domain-table-groups">
+          <th />
+          {groupRuns(columns).map(({ group, span }) => (
+            <th key={group} colSpan={span} className="group-start">
+              {group}
+            </th>
+          ))}
+          <th className="group-start" />
+        </tr>
         <tr>
           <th>Domain</th>
-          {columns.map((column) => (
-            <th key={column.label} className="numeric">
+          {columns.map((column, index) => (
+            <th key={column.name} className={groupClass(index)}>
               {column.label}
               <span className="units">{column.units}</span>
             </th>
           ))}
-          <th>
+          <th className="group-start">
             <span className="visually-hidden">Remove</span>
           </th>
         </tr>
@@ -53,89 +173,17 @@ export function DomainTable({ domains, units, hoveredDomain, onHoverDomain, onCo
             onPointerLeave={() => onHoverDomain(null)}
           >
             <td>{domainIndex + 1}</td>
-            <td>
-              <NumberField
-                label={`Domain ${domainIndex + 1} start`}
-                hideLabel
-                value={domain.start}
-                onCommit={(start) => onCommand({ kind: 'setDomainRange', domainIndex, start, end: domain.end })}
-              />
-            </td>
-            <td>
-              <NumberField
-                label={`Domain ${domainIndex + 1} end`}
-                hideLabel
-                value={domain.end}
-                onCommit={(end) => onCommand({ kind: 'setDomainRange', domainIndex, start: domain.start, end })}
-              />
-            </td>
-            <td>
-              <NumberField
-                label={`Domain ${domainIndex + 1} smoothing`}
-                hideLabel
-                value={domain.smoothing}
-                onCommit={(value) => onCommand({ kind: 'setDomainSmoothing', domainIndex, value })}
-              />
-            </td>
-            <td>
-              <NumberField
-                label={`Domain ${domainIndex + 1} threshold`}
-                hideLabel
-                value={domain.threshold}
-                onCommit={(value) => onCommand({ kind: 'setDomainThreshold', domainIndex, value })}
-              />
-            </td>
-            <td>
-              <NumberField
-                label={`Domain ${domainIndex + 1} liftoff`}
-                hideLabel
-                value={domain.liftOffPercent}
-                onCommit={(liftOffPercent) =>
-                  onCommand({
-                    kind: 'setDomainLiftOffTouchDown',
-                    domainIndex,
-                    liftOffPercent,
-                    touchDownPercent: domain.touchDownPercent,
-                  })
-                }
-              />
-            </td>
-            <td>
-              <NumberField
-                label={`Domain ${domainIndex + 1} touchdown`}
-                hideLabel
-                value={domain.touchDownPercent}
-                onCommit={(touchDownPercent) =>
-                  onCommand({
-                    kind: 'setDomainLiftOffTouchDown',
-                    domainIndex,
-                    liftOffPercent: domain.liftOffPercent,
-                    touchDownPercent,
-                  })
-                }
-              />
-            </td>
-            <td>
-              <NumberField
-                label={`Domain ${domainIndex + 1} minimum area`}
-                hideLabel
-                value={domain.minArea}
-                onCommit={(area) =>
-                  onCommand({ kind: 'setDomainMinimumPeakSize', domainIndex, area, height: domain.minHeight })
-                }
-              />
-            </td>
-            <td>
-              <NumberField
-                label={`Domain ${domainIndex + 1} minimum height`}
-                hideLabel
-                value={domain.minHeight}
-                onCommit={(height) =>
-                  onCommand({ kind: 'setDomainMinimumPeakSize', domainIndex, area: domain.minArea, height })
-                }
-              />
-            </td>
-            <td>
+            {columns.map((column, index) => (
+              <td key={column.name} className={groupClass(index)}>
+                <NumberField
+                  label={`Domain ${domainIndex + 1} ${column.name}`}
+                  hideLabel
+                  value={column.value(domain)}
+                  onCommit={(value) => onCommand(column.command(domainIndex, domain, value))}
+                />
+              </td>
+            ))}
+            <td className="group-start">
               <button
                 type="button"
                 className="remove-domain"
