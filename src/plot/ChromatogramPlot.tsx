@@ -214,13 +214,13 @@ export function ChromatogramPlot({
         onModeChange={setMode}
         trace={showTrace}
         onTraceChange={setShowTrace}
-        hasOtherTraces={hasOtherTraces}
-        otherTraces={chosenOtherTraces}
-        onOtherTracesChange={setChosenOtherTraces}
         secondDerivative={chosenSecondDerivative}
         onSecondDerivativeChange={setChosenSecondDerivative}
         domains={chosenDomains}
         onDomainsChange={setChosenDomains}
+        hasOtherTraces={hasOtherTraces}
+        otherTraces={chosenOtherTraces}
+        onOtherTracesChange={setChosenOtherTraces}
       />
       {method === 'CurvatureVnext' && dataset.vnextSettings && (
         <DomainToolbar domains={dataset.vnextSettings.domains} onCommand={onCommand} />
