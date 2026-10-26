@@ -58,6 +58,8 @@ polish. The README covers what the app does and how to run it.
 - **Structure:** reusable components with clear responsibilities, but avoid over-abstraction.
   Match the surrounding code's comment density and naming.
   - Doc comments say what something is for, in plain English.
+  - Keep comments concise: what the code does, and why when that isn't obvious. Leave out decision
+    history, earlier implementations, debugging stories and rules this file already states.
   - There's no Prettier: wrap lines at about 120 characters, as the existing code does.
 - **Text in the UI:**
   - Headings, column labels, toolbar group labels and button labels are in **title case**.
