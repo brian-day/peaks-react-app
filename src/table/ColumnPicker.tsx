@@ -44,7 +44,7 @@ export function ColumnPicker({ shown, onChange }: Props) {
           </label>
         ))}
         <button type="button" onClick={() => onChange(new Set(DEFAULT_COLUMNS))}>
-          Reset to defaults
+          Reset to Defaults
         </button>
       </div>
     </details>
