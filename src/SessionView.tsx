@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import type { Command, CreatedSession, Method } from './api/types'
-import { InjectionTable } from './injections/InjectionTable'
+import { InjectionTable } from './injection-table/InjectionTable'
+import { PeaksTable } from './peaks-table/PeaksTable'
 import { ChromatogramPlot } from './plot/ChromatogramPlot'
 import { DetectionSettings } from './settings/DetectionSettings'
 import { curvatureDetection } from './settings/domainEdits'
-import { PeaksTable } from './table/PeaksTable'
 
 type Props = {
   session: CreatedSession

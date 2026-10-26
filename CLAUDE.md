@@ -45,8 +45,8 @@ polish. The README covers what the app does and how to run it.
   returns the whole analysis, and `useSession` replaces its copy.
 - **`src/api/types.ts` mirrors the Rust structs by hand.** Change both sides together.
 - **Keep logic out of components,** in plain `.ts` modules with Vitest tests, as in
-  `plot/viewport.ts`, `plot/domains.ts`, `table/groups.ts` and `table/columns.ts`. There are no
-  component tests.
+  `plot/viewport.ts`, `plot/domains.ts`, `peaks-table/groups.ts` and `peaks-table/columns.ts`.
+  There are no component tests.
 - **Prefer explicit literal expected values in tests,** rather than calling the code under test to
   build them.
 - **Plot rendering:**

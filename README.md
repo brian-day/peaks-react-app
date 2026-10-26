@@ -59,15 +59,16 @@ You need Node (via `fnm` here), and the DVA repository for `peaks_server`.
 ```
 src/
   App, SessionView, ObjectIdForm, useSession
-                the app shell: choosing what to analyze, the session's server state, and the view
-                of one session, which starts over for each new analysis
-  api/          wire types (mirroring peaks_server's JSON by hand) and the fetch client
-  plot/         the chromatogram: SVG layers, axes, interaction, −y″, threshold bars, viewport maths
-  settings/     peak detection settings: the domain table, its per-method edits, number fields
-  table/        the peaks table, its column definitions and picker, grouping by domain
-  injections/   a protocol's injection table
-  shared/       pieces used across features and tied to none: button groups, message lists,
-                element sizing, number formatting
+                    the app shell: choosing what to analyze, the session's server state, and the
+                    view of one session, which starts over for each new analysis
+  api/              wire types (mirroring peaks_server's JSON by hand) and the fetch client
+  plot/             the chromatogram: SVG layers, axes, interaction, −y″, threshold bars,
+                    viewport maths
+  settings/         peak detection settings: the domain table, its per-method edits, number fields
+  peaks-table/      the peaks table, its column definitions and picker, grouping by domain
+  injection-table/  a protocol's injection table
+  shared/           pieces used across features and tied to none: button groups, message lists,
+                    element sizing, number formatting
 ```
 
 The plot is plain SVG with `d3-scale`, with no chart library. Long paths are built once in data
