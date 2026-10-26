@@ -63,19 +63,19 @@ export function ThresholdBar({
   const heightDrag = usePointerDrag({
     // The threshold can't be dragged below zero.
     onMove: (event) => setDraft({ ...threshold, height: Math.max(0, scale.invert(pointerToPixels(event).y)) }),
-    onRelease: () => draft && send(onHeightChange(draft.height)),
+    onRelease: () => draft && void send(onHeightChange(draft.height)),
     onCancel: () => setDraft(null),
   })
   // Each end stops at the other, since the analysis refuses a range that starts where it ends,
   // and at its limit.
   const startDrag = usePointerDrag({
     onMove: (event) => setDraft({ ...threshold, start: clamp(xAt(event), limits[0], threshold.end) }),
-    onRelease: () => draft && send(onRangeChange(draft.start, draft.end)),
+    onRelease: () => draft && void send(onRangeChange(draft.start, draft.end)),
     onCancel: () => setDraft(null),
   })
   const endDrag = usePointerDrag({
     onMove: (event) => setDraft({ ...threshold, end: clamp(xAt(event), threshold.start, limits[1]) }),
-    onRelease: () => draft && send(onRangeChange(draft.start, draft.end)),
+    onRelease: () => draft && void send(onRangeChange(draft.start, draft.end)),
     onCancel: () => setDraft(null),
   })
 

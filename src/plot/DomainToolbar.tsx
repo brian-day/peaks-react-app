@@ -47,7 +47,7 @@ export function DomainToolbar({ domains, onCommand }: Props) {
           type="button"
           title={gaps ? hint : 'There are no gaps between the domains to close'}
           disabled={busy || !gaps}
-          onClick={() => snap(direction)}
+          onClick={() => void snap(direction)}
         >
           {label}
         </button>

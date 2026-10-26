@@ -14,7 +14,10 @@ function App() {
   return (
     <main className="app">
       <h1>Peaks Preview</h1>
-      <ObjectIdForm disabled={state.status === 'loading'} onSubmit={create} />
+      <ObjectIdForm
+        disabled={state.status === 'loading'}
+        onSubmit={(objectType, objectId) => void create(objectType, objectId)}
+      />
 
       {state.status === 'loading' && <p className="status">Downloading and analyzing…</p>}
       {state.status === 'failed' && <MessageList messages={state.messages} />}
@@ -37,7 +40,7 @@ function App() {
                   onSelectDataset={(datasetIndex) => {
                     // The hovered peak belongs to the dataset being left.
                     setHoveredKey(null)
-                    selectDataset(datasetIndex)
+                    void selectDataset(datasetIndex)
                   }}
                 />
               )

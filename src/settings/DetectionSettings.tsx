@@ -48,7 +48,7 @@ export function DetectionSettings({
           {curvature && (
             <SmoothingMethodSelect
               value={curvature.smoothingMethod}
-              onChange={(smoothingMethod) => onCommand({ kind: 'setSmoothingMethod', method: smoothingMethod })}
+              onChange={(smoothingMethod) => void onCommand({ kind: 'setSmoothingMethod', method: smoothingMethod })}
             />
           )}
         </div>

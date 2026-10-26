@@ -71,8 +71,8 @@ export function PeakShape({ peak, highlighted, onMoveBoundaries }: Props) {
         </>
       ) : (
         <>
-          <BoundaryHandle point={low} onMove={(point) => moveEnd('low', point)} onRelease={release} />
-          <BoundaryHandle point={high} onMove={(point) => moveEnd('high', point)} onRelease={release} />
+          <BoundaryHandle point={low} onMove={(point) => moveEnd('low', point)} onRelease={() => void release()} />
+          <BoundaryHandle point={high} onMove={(point) => moveEnd('high', point)} onRelease={() => void release()} />
         </>
       )}
       {peak.label !== '' && (

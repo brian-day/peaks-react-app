@@ -225,7 +225,7 @@ export function ChromatogramPlot({
       {aboveSettings}
       <DetectionSettings
         method={method}
-        onMethodChange={(newMethod) => onCommand({ kind: 'setMethod', method: newMethod })}
+        onMethodChange={(newMethod) => void onCommand({ kind: 'setMethod', method: newMethod })}
         curvature={curvature}
         units={{ x: dataset.xUnits, y: dataset.yUnits }}
         hoveredDomain={hoveredDomain}
@@ -335,8 +335,8 @@ export function ChromatogramPlot({
                   minSpan={minSpan}
                   onViewChange={changePlotView}
                   onResetView={() => setView({ ...full, y2: secondFull })}
-                  onAddPeak={(low, high) => onCommand({ kind: 'addManualPeak', low, high })}
-                  onAddDomain={(start, end) => onCommand({ kind: 'addDomain', start, end })}
+                  onAddPeak={(low, high) => void onCommand({ kind: 'addManualPeak', low, high })}
+                  onAddDomain={(start, end) => void onCommand({ kind: 'addDomain', start, end })}
                   onHover={hover}
                 />
                 <g clipPath="url(#plot-area)">

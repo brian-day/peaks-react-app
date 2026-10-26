@@ -58,12 +58,12 @@ async function request<T>(
   })
 
   if (response.ok) {
-    return response.json()
+    return (await response.json()) as T
   }
 
   // peaks_server explains every error as `{ messages }`. Anything else means something other
   // than peaks_server answered, most likely Vite's proxy because the server is not running.
-  const errorBody: { messages?: ApiMessage[] } | null = await response.json().catch(() => null)
+  const errorBody = (await response.json().catch(() => null)) as { messages?: ApiMessage[] } | null
   if (errorBody?.messages) {
     throw new ApiError(errorBody.messages)
   }

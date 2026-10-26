@@ -165,7 +165,7 @@ export function DomainTable({ domains, edits, units, hoveredDomain, onHoverDomai
                     label={`Domain ${domainIndex + 1} ${column.name}`}
                     hideLabel
                     value={column.value(domain)}
-                    onCommit={(value) => onCommand(column.command(domainIndex, domain, value))}
+                    onCommit={(value) => void onCommand(column.command(domainIndex, domain, value))}
                   />
                 </td>
               ))}
@@ -182,7 +182,7 @@ export function DomainTable({ domains, edits, units, hoveredDomain, onHoverDomai
                         : 'Remove this domain'
                   }
                   disabled={!remove || domains.length === 1}
-                  onClick={() => remove && onCommand(remove(domainIndex))}
+                  onClick={() => remove && void onCommand(remove(domainIndex))}
                 >
                   ×
                 </button>
