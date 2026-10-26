@@ -1,12 +1,10 @@
 import { scaleLinear } from 'd3-scale'
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { addModeFor, hasSecondDerivative } from '../api/methods'
 import { allPeaks, peakKey } from '../api/peakIdentity'
 import type { Command, DatasetSnapshot, Method, Point } from '../api/types'
 import { MessageList } from '../components/MessageList'
 import { useElementSize } from '../hooks/useElementSize'
-import { DetectionSettings, type CurvatureDetection } from '../settings/DetectionSettings'
-import { CURVATURE_EDITS, curvatureDomain, VNEXT_EDITS } from '../settings/domainEdits'
 import { peakAt } from './hitTest'
 import { AnalysisLayer } from './AnalysisLayer'
 import { Axis } from './Axis'
@@ -47,19 +45,21 @@ type Props = {
   method: Method
   /** Whether the session has traces other than this dataset's, as a protocol does. */
   hasOtherTraces: boolean
-  /** Shown above the detection settings, such as a protocol's injections. */
-  aboveSettings?: ReactNode
   /** Sends an edit to the analysis, resolving once it has been applied or has failed. */
   onCommand: (command: Command) => Promise<void>
   /** The {@link peakKey} of the peak to highlight, whether hovered here or elsewhere. */
   hoveredKey: string | null
   /** Called with the peak under the pointer as it moves over the plot, or `null`. */
   onHoverPeak: (key: string | null) => void
+  /** The domain whose threshold bar to highlight, by its index, whether hovered here or elsewhere. */
+  hoveredDomain: number | null
+  /** Called with the domain whose threshold bar the pointer is over, or `null`. */
+  onHoverDomain: (domainIndex: number | null) => void
 }
 
 /**
- * A dataset's trace with the analysis drawn over it, and the detection settings and toolbar above,
- * filling the width of its container. The plot zooms and pans, adds and moves peaks under Manual,
+ * A dataset's trace with the analysis drawn over it, and the toolbar above, filling the width of
+ * its container. The plot zooms and pans, adds and moves peaks under Manual,
  * and adds domains under Curvature (vnext). Under the Curvature methods it can also overlay the −y''
  * of the smoothed data, on an axis of its own.
  *
@@ -75,32 +75,16 @@ export function ChromatogramPlot({
   dataset,
   method,
   hasOtherTraces,
-  aboveSettings,
   onCommand,
   hoveredKey,
   onHoverPeak,
+  hoveredDomain,
+  onHoverDomain,
 }: Props) {
   const [chosenMode, setMode] = useState<Mode>('zoom')
   // Switching to a method that cannot add what the mode adds leaves dragging to zoom again.
   const addMode = addModeFor(method)
   const mode = (chosenMode === 'addPeak' || chosenMode === 'addDomain') && chosenMode !== addMode ? 'zoom' : chosenMode
-  // The domain hovered in the domain table or on the plot, highlighted in both.
-  const [hoveredDomain, setHoveredDomain] = useState<number | null>(null)
-  // Both Curvature methods show their settings as domains; the Curvature method's one domain is
-  // its threshold's range.
-  const curvature: CurvatureDetection | null = dataset.vnextSettings
-    ? {
-        smoothingMethod: dataset.vnextSettings.smoothingMethod,
-        domains: dataset.vnextSettings.domains,
-        edits: VNEXT_EDITS,
-      }
-    : dataset.curvatureSettings
-      ? {
-          smoothingMethod: dataset.curvatureSettings.smoothingMethod,
-          domains: [curvatureDomain(dataset.curvatureSettings)],
-          edits: CURVATURE_EDITS,
-        }
-      : null
 
   // −y'' only exists under the Curvature methods. The choice is kept while another method is active,
   // so the curve comes back on returning to one.
@@ -222,16 +206,6 @@ export function ChromatogramPlot({
 
   return (
     <div className="plot-panel">
-      {aboveSettings}
-      <DetectionSettings
-        method={method}
-        onMethodChange={(newMethod) => void onCommand({ kind: 'setMethod', method: newMethod })}
-        curvature={curvature}
-        units={{ x: dataset.xUnits, y: dataset.yUnits }}
-        hoveredDomain={hoveredDomain}
-        onHoverDomain={setHoveredDomain}
-        onCommand={onCommand}
-      />
       <PlotToolbar
         method={method}
         mode={mode}
@@ -372,7 +346,7 @@ export function ChromatogramPlot({
                       showBars={showSecondDerivative && overlays !== null}
                       showBoundaries={showDomains}
                       hoveredDomain={hoveredDomain}
-                      onHoverDomain={setHoveredDomain}
+                      onHoverDomain={onHoverDomain}
                       onCommand={onCommand}
                     />
                   )}

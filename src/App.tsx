@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { MessageList } from './components/MessageList'
 import { ObjectIdForm } from './components/ObjectIdForm'
 import { useSession } from './hooks/useSession'
-import { InjectionTable } from './injections/InjectionTable'
-import { ChromatogramPlot } from './plot/ChromatogramPlot'
+import { SessionView } from './SessionView'
 import { PeaksTable } from './table/PeaksTable'
 
 function App() {
@@ -24,32 +23,21 @@ function App() {
       {state.status === 'loaded' && (
         <>
           <MessageList messages={[...state.session.messages, ...state.commandErrors]} />
-          {/* A new key per session gives each one a fresh plot, so a new analysis starts zoomed out.
-              Switching datasets keeps the plot, and its zoom, so injections compare at one scale. */}
-          <ChromatogramPlot
+          {/* A new key per session starts everything in it over, so a new analysis starts zoomed out. */}
+          <SessionView
             key={state.session.sessionId}
-            sessionId={state.session.sessionId}
-            dataset={state.session.dataset}
+            session={state.session}
             method={state.method}
-            hasOtherTraces={state.session.datasets.length > 1 || state.session.injectionTable !== null}
-            aboveSettings={
-              state.session.injectionTable && (
-                <InjectionTable
-                  injections={state.session.injectionTable}
-                  activeDataset={state.session.dataset.index}
-                  onSelectDataset={(datasetIndex) => {
-                    // The hovered peak belongs to the dataset being left.
-                    setHoveredKey(null)
-                    void selectDataset(datasetIndex)
-                  }}
-                />
-              )
-            }
             onCommand={sendCommand}
+            onSelectDataset={(datasetIndex) => {
+              // The hovered peak belongs to the dataset being left.
+              setHoveredKey(null)
+              void selectDataset(datasetIndex)
+            }}
             hoveredKey={hoveredKey}
             onHoverPeak={setHoveredKey}
           />
-          {/* No per-session key here: the chosen columns carry over to the next analysis. */}
+          {/* Outside the session's key: the chosen columns carry over to the next analysis. */}
           <PeaksTable
             rows={state.session.dataset.table}
             analysis={state.session.dataset.analysis}

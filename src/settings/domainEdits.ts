@@ -1,4 +1,35 @@
-import type { Command, CurvatureSettings, DomainSettings } from '../api/types'
+import type { Command, CurvatureSettings, DatasetSnapshot, DomainSettings, SmoothingMethod } from '../api/types'
+
+/** A Curvature method's settings, as domains. */
+export type CurvatureDetection = {
+  /** Shared by every domain. */
+  smoothingMethod: SmoothingMethod
+  domains: DomainSettings[]
+  /** The commands the table's edits send, for whichever Curvature method is active. */
+  edits: DomainEdits
+}
+
+/**
+ * The active Curvature method's settings as domains, or `null` under a method without any. Both
+ * Curvature methods show their settings as domains; the Curvature method's one domain is its
+ * threshold's range.
+ */
+export function curvatureDetection({
+  curvatureSettings,
+  vnextSettings,
+}: Pick<DatasetSnapshot, 'curvatureSettings' | 'vnextSettings'>): CurvatureDetection | null {
+  if (vnextSettings) {
+    return { smoothingMethod: vnextSettings.smoothingMethod, domains: vnextSettings.domains, edits: VNEXT_EDITS }
+  }
+  if (curvatureSettings) {
+    return {
+      smoothingMethod: curvatureSettings.smoothingMethod,
+      domains: [curvatureDomain(curvatureSettings)],
+      edits: CURVATURE_EDITS,
+    }
+  }
+  return null
+}
 
 /**
  * The commands a domain table sends, for whichever Curvature method is active. Each names the

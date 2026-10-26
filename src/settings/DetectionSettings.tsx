@@ -1,17 +1,8 @@
-import type { Command, DomainSettings, Method, SmoothingMethod } from '../api/types'
+import type { Command, Method } from '../api/types'
 import { DomainTable } from './DomainTable'
-import type { DomainEdits } from './domainEdits'
+import type { CurvatureDetection } from './domainEdits'
 import { MethodPicker } from './MethodPicker'
 import { SmoothingMethodSelect } from './SmoothingMethodSelect'
-
-/** A Curvature method's settings, as domains. */
-export type CurvatureDetection = {
-  /** Shared by every domain. */
-  smoothingMethod: SmoothingMethod
-  domains: DomainSettings[]
-  /** The commands the table's edits send, for whichever Curvature method is active. */
-  edits: DomainEdits
-}
 
 type Props = {
   method: Method

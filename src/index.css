@@ -643,6 +643,7 @@ select {
 
 /* Toolbar */
 
+.session-view,
 .plot-panel {
   display: flex;
   flex-direction: column;
