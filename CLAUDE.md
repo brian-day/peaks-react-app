@@ -60,6 +60,8 @@ polish. The README covers what the app does and how to run it.
   - Every component, private ones included, takes its props as a named type, never inline in its
     signature: `Props`, or a name like `RowProps` for a file's other components. The type goes
     above the component, and the component's doc comment directly above the `function`.
+  - Order a component file as: imports, constants, `Props`, the main component, then its private
+    helpers and components, so a reader meets what the file is for before its details.
   - Doc comments say what something is for, in plain English.
   - Keep comments concise: what the code does, and why when that isn't obvious. Leave out decision
     history, earlier implementations, debugging stories and rules this file already states.

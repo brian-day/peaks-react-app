@@ -14,6 +14,87 @@ type Props = {
   onCommand: (command: Command) => Promise<void>
 }
 
+/**
+ * The domains peaks are detected in, one row each in order of their start, with every setting a
+ * domain has of its own, grouped under headings. Rows are numbered as the commands number domains.
+ */
+export function DomainTable({ domains, edits, units, hoveredDomain, onHoverDomain, onCommand }: Props) {
+  const columns = domainColumns(units, edits)
+  const { remove } = edits
+  const groupClass = (index: number) => (startsGroup(columns, index) ? 'group-start' : undefined)
+
+  return (
+    <div className="table-frame">
+      <table className="data-table domain-table">
+        <thead>
+          <tr className="domain-table-groups">
+            <th />
+            {groupRuns(columns).map(({ group, span }) => (
+              <th key={group} colSpan={span} className="group-start">
+                {group}
+              </th>
+            ))}
+            <th className="group-start" />
+          </tr>
+          <tr>
+            <th>Domain</th>
+            {columns.map((column, index) => (
+              <th key={column.name} className={groupClass(index)}>
+                {column.label}
+                <span className="units">{column.units}</span>
+              </th>
+            ))}
+            <th className="group-start">
+              <span className="visually-hidden">Remove</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {domains.map((domain, domainIndex) => (
+            // Domains have no identity of their own beyond their place in order.
+            <tr
+              key={domainIndex}
+              className={domainIndex === hoveredDomain ? 'domain-row--highlighted' : undefined}
+              onPointerEnter={() => onHoverDomain(domainIndex)}
+              onPointerLeave={() => onHoverDomain(null)}
+            >
+              <td>{domainIndex + 1}</td>
+              {columns.map((column, index) => (
+                <td key={column.name} className={groupClass(index)}>
+                  <NumberField
+                    label={`Domain ${domainIndex + 1} ${column.name}`}
+                    hideLabel
+                    value={column.value(domain)}
+                    onCommit={(value) => void onCommand(column.command(domainIndex, domain, value))}
+                  />
+                </td>
+              ))}
+              <td className="group-start">
+                <button
+                  type="button"
+                  className="remove-domain"
+                  aria-label={`Remove domain ${domainIndex + 1}`}
+                  title={
+                    !remove
+                      ? 'This method has one domain, its threshold\u2019s range'
+                      : domains.length === 1
+                        ? 'An analysis needs at least one domain'
+                        : 'Remove this domain'
+                  }
+                  disabled={!remove || domains.length === 1}
+                  onClick={() => remove && void onCommand(remove(domainIndex))}
+                >
+                  ×
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 /** One of a domain's settings: how it is headed, shown and changed. */
 type DomainColumn = {
   /** The heading over a run of related columns, such as `Baseline`. */
@@ -112,85 +193,4 @@ function groupRuns(columns: DomainColumn[]): { group: string; span: number }[] {
 /** Whether a column starts its group, and so has the line dividing it from the group before. */
 function startsGroup(columns: DomainColumn[], index: number) {
   return columns[index - 1]?.group !== columns[index].group
-}
-
-/**
- * The domains peaks are detected in, one row each in order of their start, with every setting a
- * domain has of its own, grouped under headings. Rows are numbered as the commands number domains.
- */
-export function DomainTable({ domains, edits, units, hoveredDomain, onHoverDomain, onCommand }: Props) {
-  const columns = domainColumns(units, edits)
-  const { remove } = edits
-  const groupClass = (index: number) => (startsGroup(columns, index) ? 'group-start' : undefined)
-
-  return (
-    <div className="table-frame">
-      <table className="data-table domain-table">
-        <thead>
-          <tr className="domain-table-groups">
-            <th />
-            {groupRuns(columns).map(({ group, span }) => (
-              <th key={group} colSpan={span} className="group-start">
-                {group}
-              </th>
-            ))}
-            <th className="group-start" />
-          </tr>
-          <tr>
-            <th>Domain</th>
-            {columns.map((column, index) => (
-              <th key={column.name} className={groupClass(index)}>
-                {column.label}
-                <span className="units">{column.units}</span>
-              </th>
-            ))}
-            <th className="group-start">
-              <span className="visually-hidden">Remove</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {domains.map((domain, domainIndex) => (
-            // Domains have no identity of their own beyond their place in order.
-            <tr
-              key={domainIndex}
-              className={domainIndex === hoveredDomain ? 'domain-row--highlighted' : undefined}
-              onPointerEnter={() => onHoverDomain(domainIndex)}
-              onPointerLeave={() => onHoverDomain(null)}
-            >
-              <td>{domainIndex + 1}</td>
-              {columns.map((column, index) => (
-                <td key={column.name} className={groupClass(index)}>
-                  <NumberField
-                    label={`Domain ${domainIndex + 1} ${column.name}`}
-                    hideLabel
-                    value={column.value(domain)}
-                    onCommit={(value) => void onCommand(column.command(domainIndex, domain, value))}
-                  />
-                </td>
-              ))}
-              <td className="group-start">
-                <button
-                  type="button"
-                  className="remove-domain"
-                  aria-label={`Remove domain ${domainIndex + 1}`}
-                  title={
-                    !remove
-                      ? 'This method has one domain, its threshold\u2019s range'
-                      : domains.length === 1
-                        ? 'An analysis needs at least one domain'
-                        : 'Remove this domain'
-                  }
-                  disabled={!remove || domains.length === 1}
-                  onClick={() => remove && void onCommand(remove(domainIndex))}
-                >
-                  ×
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
 }
