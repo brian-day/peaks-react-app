@@ -6,6 +6,9 @@ import type { CurvatureBoundaryType } from '../api/types'
 /** The markers' size: a disc's radius, and the scale every other shape is drawn to. */
 export const MARKER_RADIUS = 4
 
+/** A draggable boundary's handle, a little larger than a marker. */
+export const HANDLE_RADIUS = 5
+
 // An equilateral triangle that fits the marker's circle: half its base is 2/√3 of its half-height.
 const TRIANGLE_HALF_BASE = 2 / Math.sqrt(3)
 // The shoulder's diamond is a little taller than it is wide.

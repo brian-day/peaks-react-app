@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { CurvatureBoundaryType, PeakView, Point } from '../api/types'
-import { boundaryMarkerPath, disc, MARKER_RADIUS } from './markers'
+import { boundaryMarkerPath, disc, HANDLE_RADIUS, MARKER_RADIUS } from './markers'
 import { usePlot } from './plotContext'
 import { dataPath, dataTransform } from './scale'
 import { usePointerDrag } from './usePointerDrag'
@@ -116,7 +116,7 @@ function BoundaryHandle({ point, onMove, onRelease }: HandleProps) {
       className={dragging ? 'peak-handle peak-handle--dragging' : 'peak-handle'}
       cx={xScale(point.x)}
       cy={yScale(point.y)}
-      r={5}
+      r={HANDLE_RADIUS}
       {...handlers}
     />
   )

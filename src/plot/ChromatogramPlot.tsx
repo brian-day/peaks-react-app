@@ -38,6 +38,8 @@ const HEIGHT = 380
 const MARGIN = { top: 16, right: 24, bottom: 48, left: 72 }
 // Room on the right for the −y'' axis's ticks and label while it is shown.
 const RIGHT_AXIS_MARGIN = 80
+// How far each axis's label sits from its axis line, within the margin on that side.
+const LABEL_DISTANCE = { bottom: 38, left: 56, right: 64 }
 
 type Props = {
   sessionId: string
@@ -261,14 +263,26 @@ export function ChromatogramPlot({
             </defs>
             <PlotContext value={plot}>
               <g transform={`translate(${margin.left},${margin.top})`}>
-                <Axis orientation="bottom" scale={xScale} position={plotHeight} labelDistance={38} label={dataset.xUnits} />
-                <Axis orientation="left" scale={yScale} position={0} labelDistance={56} label={dataset.yUnits} />
+                <Axis
+                  orientation="bottom"
+                  scale={xScale}
+                  position={plotHeight}
+                  labelDistance={LABEL_DISTANCE.bottom}
+                  label={dataset.xUnits}
+                />
+                <Axis
+                  orientation="left"
+                  scale={yScale}
+                  position={0}
+                  labelDistance={LABEL_DISTANCE.left}
+                  label={dataset.yUnits}
+                />
                 {showRightAxis && (
                   <Axis
                     orientation="right"
                     scale={secondDerivativeScale}
                     position={plotWidth}
-                    labelDistance={64}
+                    labelDistance={LABEL_DISTANCE.right}
                     label={`−y″ (${dataset.yUnits}/${dataset.xUnits}²)`}
                   />
                 )}
