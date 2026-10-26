@@ -1,10 +1,8 @@
-import { addModeFor, hasSecondDerivative, METHOD_LABELS } from '../api/methods'
+import type { ReactNode } from 'react'
+import { addModeFor, hasSecondDerivative } from '../api/methods'
 import type { Method } from '../api/types'
 import { ButtonGroup } from '../components/ButtonGroup'
 import type { Mode } from './InteractionLayer'
-
-// Threshold is left out until the app can create thresholds; switching to it would show nothing.
-const METHODS: Method[] = ['Curvature', 'CurvatureVnext', 'Manual']
 
 const MODES: { mode: Mode; label: string; hint: string }[] = [
   { mode: 'zoom', label: 'Zoom', hint: 'Drag a box to zoom in; double-click to zoom out' },
@@ -18,8 +16,8 @@ const MODES: { mode: Mode; label: string; hint: string }[] = [
 ]
 
 type Props = {
+  /** Which adding mode and which curves there are to choose from depend on the method. */
   method: Method
-  onMethodChange: (method: Method) => void
   mode: Mode
   onModeChange: (mode: Mode) => void
   trace: boolean
@@ -32,16 +30,17 @@ type Props = {
   hasOtherTraces: boolean
   otherTraces: boolean
   onOtherTracesChange: (shown: boolean) => void
+  /** Further groups for the same row, such as the method's own tools. */
+  children?: ReactNode
 }
 
 /**
- * Chooses the peak-picking method, what dragging across the plot does, and what is drawn: the
- * trace, under the Curvature methods −y'' and the boundaries of the domains peaks are detected in,
- * and the other injections' traces.
+ * Chooses what dragging across the plot does and what is drawn: the trace, under the Curvature
+ * methods −y'' and the boundaries of the domains peaks are detected in, and the other injections'
+ * traces.
  */
 export function PlotToolbar({
   method,
-  onMethodChange,
   mode,
   onModeChange,
   trace,
@@ -53,16 +52,10 @@ export function PlotToolbar({
   hasOtherTraces,
   otherTraces,
   onOtherTracesChange,
+  children,
 }: Props) {
   return (
     <div className="plot-toolbar">
-      <ButtonGroup label="Method">
-        {METHODS.map((m) => (
-          <button key={m} type="button" aria-pressed={m === method} onClick={() => onMethodChange(m)}>
-            {METHOD_LABELS[m]}
-          </button>
-        ))}
-      </ButtonGroup>
       <ButtonGroup label="Drag To">
         {MODES
           // Each adding mode only means something under its own method, so it is shown only there.
@@ -118,6 +111,7 @@ export function PlotToolbar({
           </button>
         )}
       </ButtonGroup>
+      {children}
     </div>
   )
 }

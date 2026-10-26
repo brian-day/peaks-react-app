@@ -654,6 +654,9 @@ select {
   flex-wrap: wrap;
   /* Groups that wrap onto a second line sit as close as the rows below the toolbar do. */
   gap: 8px 16px;
+  /* Set apart from the settings above, as the Peaks table is from the plot: the toolbar belongs
+     with the plot under it. Added to the panel's gap, for 16px in all. */
+  margin-top: 8px;
 }
 
 .button-group {

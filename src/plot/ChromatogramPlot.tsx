@@ -13,6 +13,7 @@ import { Axis } from './Axis'
 import { AxisDragArea } from './AxisDragArea'
 import { DomainToolbar } from './DomainToolbar'
 import { InteractionLayer, type Mode } from './InteractionLayer'
+import { MethodPicker } from './MethodPicker'
 import { OtherTraces } from './OtherTraces'
 import { PlotContext, type PlotGeometry } from './plotContext'
 import { PlotToolbar } from './PlotToolbar'
@@ -45,8 +46,8 @@ type Props = {
   method: Method
   /** Whether the session has traces other than this dataset's, as a protocol does. */
   hasOtherTraces: boolean
-  /** Shown between the toolbar and the detection settings, such as a protocol's injections. */
-  belowToolbar?: ReactNode
+  /** Shown between the method picker and the detection settings, such as a protocol's injections. */
+  belowMethod?: ReactNode
   /** Sends an edit to the analysis, resolving once it has been applied or has failed. */
   onCommand: (command: Command) => Promise<void>
   /** The {@link peakKey} of the peak to highlight, whether hovered here or elsewhere. */
@@ -73,7 +74,7 @@ export function ChromatogramPlot({
   dataset,
   method,
   hasOtherTraces,
-  belowToolbar,
+  belowMethod,
   onCommand,
   hoveredKey,
   onHoverPeak,
@@ -222,9 +223,23 @@ export function ChromatogramPlot({
 
   return (
     <div className="plot-panel">
-      <PlotToolbar
+      <MethodPicker
         method={method}
         onMethodChange={(newMethod) => onCommand({ kind: 'setMethod', method: newMethod })}
+      />
+      {belowMethod}
+      {detection && (
+        <DetectionSettings
+          {...detection}
+          units={{ x: dataset.xUnits, y: dataset.yUnits }}
+          hoveredDomain={hoveredDomain}
+          onHoverDomain={setHoveredDomain}
+          onCommand={onCommand}
+        />
+      )}
+      {/* Right over the plot, as it only changes how the plot is viewed and edited. */}
+      <PlotToolbar
+        method={method}
         mode={mode}
         onModeChange={setMode}
         trace={showTrace}
@@ -236,20 +251,13 @@ export function ChromatogramPlot({
         hasOtherTraces={hasOtherTraces}
         otherTraces={chosenOtherTraces}
         onOtherTracesChange={setChosenOtherTraces}
-      />
-      {method === 'CurvatureVnext' && dataset.vnextSettings && (
-        <DomainToolbar domains={dataset.vnextSettings.domains} onCommand={onCommand} />
-      )}
-      {belowToolbar}
-      {detection && (
-        <DetectionSettings
-          {...detection}
-          units={{ x: dataset.xUnits, y: dataset.yUnits }}
-          hoveredDomain={hoveredDomain}
-          onHoverDomain={setHoveredDomain}
-          onCommand={onCommand}
-        />
-      )}
+      >
+        {method === 'CurvatureVnext' && dataset.vnextSettings && (
+          <DomainToolbar domains={dataset.vnextSettings.domains} onCommand={onCommand} />
+        )}
+      </PlotToolbar>
+      {/* Below the toolbar, so a message appearing doesn't move the buttons out from under the
+          pointer. */}
       <MessageList messages={[...overlayErrors, ...(showOtherTraces ? otherTraceMessages : [])]} />
       <div ref={containerRef} className="plot">
         {/* Nothing to draw until the container has been measured. */}

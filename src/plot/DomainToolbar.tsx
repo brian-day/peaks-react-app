@@ -16,7 +16,8 @@ type Props = {
 
 /**
  * Edits Curvature (vnext)'s domains all at once: closes the gaps between them, so that peaks are
- * detected everywhere from the first domain's start to the last domain's end.
+ * detected everywhere from the first domain's start to the last domain's end. A button group, to sit
+ * in a toolbar's row.
  */
 export function DomainToolbar({ domains, onCommand }: Props) {
   const [busy, setBusy] = useState(false)
@@ -40,20 +41,18 @@ export function DomainToolbar({ domains, onCommand }: Props) {
 
   const gaps = hasGaps(domains)
   return (
-    <div className="plot-toolbar">
-      <ButtonGroup label="Snap Domains">
-        {SNAPS.map(({ snap: direction, label, hint }) => (
-          <button
-            key={direction}
-            type="button"
-            title={gaps ? hint : 'There are no gaps between the domains to close'}
-            disabled={busy || !gaps}
-            onClick={() => snap(direction)}
-          >
-            {label}
-          </button>
-        ))}
-      </ButtonGroup>
-    </div>
+    <ButtonGroup label="Snap Domains">
+      {SNAPS.map(({ snap: direction, label, hint }) => (
+        <button
+          key={direction}
+          type="button"
+          title={gaps ? hint : 'There are no gaps between the domains to close'}
+          disabled={busy || !gaps}
+          onClick={() => snap(direction)}
+        >
+          {label}
+        </button>
+      ))}
+    </ButtonGroup>
   )
 }

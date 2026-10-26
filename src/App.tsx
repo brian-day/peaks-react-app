@@ -29,7 +29,7 @@ function App() {
             dataset={state.session.dataset}
             method={state.method}
             hasOtherTraces={state.session.datasets.length > 1 || state.session.injectionTable !== null}
-            belowToolbar={
+            belowMethod={
               state.session.injectionTable && (
                 <InjectionTable
                   injections={state.session.injectionTable}
