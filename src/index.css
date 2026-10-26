@@ -377,8 +377,10 @@ select {
   margin: 0;
 }
 
-.peaks-table-scroll,
-.injection-table-scroll {
+/* The frame every table sits in: the border and rounded corners are drawn here rather than on the
+   table, since a table with collapsed borders ignores border-radius. Scrolling also clips the
+   heading row's background to the rounded corners. */
+.table-frame {
   overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -567,9 +569,7 @@ select {
 
 .domain-table {
   border-collapse: collapse;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  width: 100%;
   font-size: 0.85rem;
 }
 

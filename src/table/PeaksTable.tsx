@@ -78,7 +78,7 @@ export function PeaksTable({ rows, analysis, units, domains, hoveredKey, onHover
       {rows.length === 0 ? (
         <p className="status">No peaks.</p>
       ) : (
-        <div className="peaks-table-scroll">
+        <div className="table-frame">
           <table>
             <thead>
               <tr>

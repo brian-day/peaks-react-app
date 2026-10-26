@@ -124,71 +124,73 @@ export function DomainTable({ domains, edits, units, hoveredDomain, onHoverDomai
   const groupClass = (index: number) => (startsGroup(columns, index) ? 'group-start' : undefined)
 
   return (
-    <table className="domain-table">
-      <thead>
-        <tr className="domain-table-groups">
-          <th />
-          {groupRuns(columns).map(({ group, span }) => (
-            <th key={group} colSpan={span} className="group-start">
-              {group}
-            </th>
-          ))}
-          <th className="group-start" />
-        </tr>
-        <tr>
-          <th>Domain</th>
-          {columns.map((column, index) => (
-            <th key={column.name} className={groupClass(index)}>
-              {column.label}
-              <span className="units">{column.units}</span>
-            </th>
-          ))}
-          <th className="group-start">
-            <span className="visually-hidden">Remove</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {domains.map((domain, domainIndex) => (
-          // Domains have no identity of their own beyond their place in order.
-          <tr
-            key={domainIndex}
-            className={domainIndex === hoveredDomain ? 'domain-row--highlighted' : undefined}
-            onPointerEnter={() => onHoverDomain(domainIndex)}
-            onPointerLeave={() => onHoverDomain(null)}
-          >
-            <td>{domainIndex + 1}</td>
-            {columns.map((column, index) => (
-              <td key={column.name} className={groupClass(index)}>
-                <NumberField
-                  label={`Domain ${domainIndex + 1} ${column.name}`}
-                  hideLabel
-                  value={column.value(domain)}
-                  onCommit={(value) => onCommand(column.command(domainIndex, domain, value))}
-                />
-              </td>
+    <div className="table-frame">
+      <table className="domain-table">
+        <thead>
+          <tr className="domain-table-groups">
+            <th />
+            {groupRuns(columns).map(({ group, span }) => (
+              <th key={group} colSpan={span} className="group-start">
+                {group}
+              </th>
             ))}
-            <td className="group-start">
-              <button
-                type="button"
-                className="remove-domain"
-                aria-label={`Remove domain ${domainIndex + 1}`}
-                title={
-                  !remove
-                    ? 'This method has one domain, its threshold\u2019s range'
-                    : domains.length === 1
-                      ? 'An analysis needs at least one domain'
-                      : 'Remove this domain'
-                }
-                disabled={!remove || domains.length === 1}
-                onClick={() => remove && onCommand(remove(domainIndex))}
-              >
-                ×
-              </button>
-            </td>
+            <th className="group-start" />
           </tr>
-        ))}
-      </tbody>
-    </table>
+          <tr>
+            <th>Domain</th>
+            {columns.map((column, index) => (
+              <th key={column.name} className={groupClass(index)}>
+                {column.label}
+                <span className="units">{column.units}</span>
+              </th>
+            ))}
+            <th className="group-start">
+              <span className="visually-hidden">Remove</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {domains.map((domain, domainIndex) => (
+            // Domains have no identity of their own beyond their place in order.
+            <tr
+              key={domainIndex}
+              className={domainIndex === hoveredDomain ? 'domain-row--highlighted' : undefined}
+              onPointerEnter={() => onHoverDomain(domainIndex)}
+              onPointerLeave={() => onHoverDomain(null)}
+            >
+              <td>{domainIndex + 1}</td>
+              {columns.map((column, index) => (
+                <td key={column.name} className={groupClass(index)}>
+                  <NumberField
+                    label={`Domain ${domainIndex + 1} ${column.name}`}
+                    hideLabel
+                    value={column.value(domain)}
+                    onCommit={(value) => onCommand(column.command(domainIndex, domain, value))}
+                  />
+                </td>
+              ))}
+              <td className="group-start">
+                <button
+                  type="button"
+                  className="remove-domain"
+                  aria-label={`Remove domain ${domainIndex + 1}`}
+                  title={
+                    !remove
+                      ? 'This method has one domain, its threshold\u2019s range'
+                      : domains.length === 1
+                        ? 'An analysis needs at least one domain'
+                        : 'Remove this domain'
+                  }
+                  disabled={!remove || domains.length === 1}
+                  onClick={() => remove && onCommand(remove(domainIndex))}
+                >
+                  ×
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }

@@ -24,7 +24,7 @@ export function InjectionTable({ injections, activeDataset, onSelectDataset }: P
     // Collapses as the settings do, to give the plot the room once an injection is chosen.
     <details className="injection-table" open>
       <summary>Injections</summary>
-      <div className="injection-table-scroll">
+      <div className="table-frame">
         <table>
           <thead>
             <tr>
