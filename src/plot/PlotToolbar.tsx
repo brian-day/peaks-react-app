@@ -9,10 +9,10 @@ const METHODS: Method[] = ['Curvature', 'CurvatureVnext', 'Manual']
 const MODES: { mode: Mode; label: string; hint: string }[] = [
   { mode: 'zoom', label: 'Zoom', hint: 'Drag a box to zoom in; double-click to zoom out' },
   { mode: 'pan', label: 'Pan', hint: 'Drag to pan, or hold Shift in any mode' },
-  { mode: 'addPeak', label: 'Add peak', hint: 'Drag across a peak to add it, or hold Alt (Option) in any mode' },
+  { mode: 'addPeak', label: 'Add Peak', hint: 'Drag across a peak to add it, or hold Alt (Option) in any mode' },
   {
     mode: 'addDomain',
-    label: 'Add domain',
+    label: 'Add Domain',
     hint: 'Drag across a stretch outside the domains to detect peaks there too, or hold Alt (Option) in any mode',
   },
 ]
@@ -114,7 +114,7 @@ export function PlotToolbar({
             onClick={() => onOtherTracesChange(!otherTraces)}
           >
             <span className="swatch swatch--other-traces" aria-hidden="true" />
-            Other traces
+            Other Traces
           </button>
         )}
       </ButtonGroup>
