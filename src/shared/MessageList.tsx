@@ -1,6 +1,10 @@
 import type { ApiMessage } from '../api/types'
 
-export function MessageList({ messages }: { messages: ApiMessage[] }) {
+type Props = {
+  messages: ApiMessage[]
+}
+
+export function MessageList({ messages }: Props) {
   if (messages.length === 0) return null
 
   return (

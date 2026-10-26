@@ -91,8 +91,14 @@ const BOUNDARY_NAMES: Record<CurvatureBoundaryType, string> = {
   Round: 'Round boundary',
 }
 
+type MarkerProps = {
+  type: CurvatureBoundaryType | null
+  x: number
+  y: number
+}
+
 /** A boundary drawn in the shape of its integration type, named on hover. */
-function BoundaryMarker({ type, x, y }: { type: CurvatureBoundaryType | null; x: number; y: number }) {
+function BoundaryMarker({ type, x, y }: MarkerProps) {
   return (
     <path className="peak-boundary" d={boundaryMarkerPath(type, x, y)}>
       {type && <title>{BOUNDARY_NAMES[type]}</title>}
