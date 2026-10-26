@@ -1,5 +1,4 @@
-// How each of the table's columns is labelled and its values shown. The values themselves come
-// from peaks_server; nothing here computes a peak property.
+// How each of the table's columns is labelled and its values shown.
 
 import type { CellValue, ColumnKey, CurvatureBoundaryType, PeakRow, PeakView } from '../api/types'
 import { formatNumber } from '../format'
@@ -113,10 +112,7 @@ export const COLUMNS: ColumnDefinition[] = [
   },
 ]
 
-/**
- * The columns shown until the user picks others, as in the Mathematica preview, but for Parent:
- * nothing here can set a parent peak yet.
- */
+/** The columns shown until the user picks others. Parent is left out, as nothing can set it yet. */
 export const DEFAULT_COLUMNS: TableColumnKey[] = [
   'label',
   'status',

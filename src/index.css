@@ -68,9 +68,8 @@ body {
   color: var(--muted);
 }
 
-/* Drop-downs drawn like the text inputs beside them, rather than as the browser's raised buttons:
-   the same thin grey border, and a pixel more padding for the border's pixel less, so they stand
-   as tall. The arrow is drawn in place of the native one. */
+/* Drop-downs drawn like the text inputs beside them, with a pixel more padding for the border's
+   pixel less so they stand as tall, and a drawn arrow in place of the native one. */
 select {
   appearance: none;
   box-sizing: content-box;
@@ -377,9 +376,8 @@ select {
   margin: 0;
 }
 
-/* The frame every table sits in: the border and rounded corners are drawn here rather than on the
-   table, since a table with collapsed borders ignores border-radius. Scrolling also clips the
-   heading row's background to the rounded corners. */
+/* The frame every table sits in. The border and rounded corners are drawn here because a table
+   with collapsed borders ignores border-radius. */
 .table-frame {
   overflow-x: auto;
   background: var(--surface);
@@ -661,8 +659,7 @@ select {
   flex-wrap: wrap;
   /* Groups that wrap onto a second line sit as close as the rows below the toolbar do. */
   gap: 8px 16px;
-  /* Set apart from the settings above, as the Peaks table is from the plot: the toolbar belongs
-     with the plot under it. Added to the panel's gap, for 16px in all. */
+  /* Sets the toolbar and plot apart from the settings above: 16px with the panel's gap. */
   margin-top: 8px;
 }
 
@@ -731,8 +728,7 @@ select {
   border-bottom: none;
 }
 
-/* Names wrap rather than widen the table past the page. The gradient's limit is a little more than
-   the longest name in the protocols tried so far, so typical names stay on one line. */
+/* Names wrap rather than widen the table past the page. */
 .injection-table .injection-sample,
 .injection-table .injection-gradient {
   white-space: normal;

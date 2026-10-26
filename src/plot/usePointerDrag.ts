@@ -10,12 +10,9 @@ type Callbacks = {
 }
 
 /**
- * Follows the pointer across the whole window while `active`, for a drag that began on an element,
- * until it is released anywhere, outside the plot or the window included.
- *
- * Capturing the pointer on the element isn't enough on its own: released outside the plot, Chrome
- * often takes the capture back before the release, or even while the button is still down, and
- * sends the release to whatever is under the pointer. The window hears it either way.
+ * Follows the pointer across the whole window while `active`, so a drag that began on an element
+ * ends wherever it is released, even outside the window. Pointer capture alone isn't reliable for
+ * this: Chrome sometimes drops it before the release.
  */
 export function useWindowDrag(active: boolean, { onMove, onRelease, onCancel }: Callbacks) {
   // Effect events always call the latest callbacks, so the listeners needn't be re-added each render.

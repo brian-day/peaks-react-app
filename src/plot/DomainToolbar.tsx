@@ -16,8 +16,7 @@ type Props = {
 
 /**
  * Edits Curvature (vnext)'s domains all at once: closes the gaps between them, so that peaks are
- * detected everywhere from the first domain's start to the last domain's end. A button group, to sit
- * in a toolbar's row.
+ * detected everywhere from the first domain's start to the last domain's end.
  */
 export function DomainToolbar({ domains, onCommand }: Props) {
   const [busy, setBusy] = useState(false)

@@ -80,8 +80,6 @@ export function InteractionLayer({
     }
   }
 
-  // Followed across the whole window, so a drag carries on, and ends, wherever the pointer is
-  // released; see useWindowDrag.
   useWindowDrag(drag !== null, { onMove: onDragMove, onRelease: onDragEnd, onCancel: () => setDrag(null) })
 
   function onDragMove(event: PointerEvent) {

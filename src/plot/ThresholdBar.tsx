@@ -61,7 +61,7 @@ export function ThresholdBar({
   }
 
   const heightDrag = usePointerDrag({
-    // As in the Mathematica preview, the threshold cannot be dragged below zero.
+    // The threshold can't be dragged below zero.
     onMove: (event) => setDraft({ ...threshold, height: Math.max(0, scale.invert(pointerToPixels(event).y)) }),
     onRelease: () => draft && send(onHeightChange(draft.height)),
     onCancel: () => setDraft(null),

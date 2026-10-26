@@ -14,7 +14,7 @@ type Props = {
   domain: Domain
   full: Domain
   onChange: (domain: Domain) => void
-  /** Double-clicking the axis resets it, however its owner sees fit. */
+  /** Called when the axis is double-clicked. */
   onReset: () => void
   title: string
 }

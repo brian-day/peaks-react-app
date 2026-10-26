@@ -1,6 +1,5 @@
-// The JSON that peaks_server sends, mirroring DVA's `peaks_server/src/session.rs` and
-// `dva_lib/src/analyze_peaks/view.rs`. Hand-written for now; these should be generated from the
-// Rust types once the shapes settle.
+// The JSON that peaks_server sends, mirrored by hand from DVA's `peaks_server/src/session.rs` and
+// `dva_lib/src/analyze_peaks/view.rs`.
 
 export type Point = { x: number; y: number }
 

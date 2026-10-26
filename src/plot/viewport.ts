@@ -1,4 +1,4 @@
-// The maths of zooming and panning, kept free of React and the DOM so it can be tested directly.
+// The maths of zooming and panning.
 
 import type { Point, XY } from '../api/types'
 

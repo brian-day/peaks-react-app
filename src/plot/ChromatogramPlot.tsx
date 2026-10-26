@@ -56,10 +56,10 @@ type Props = {
 }
 
 /**
- * A dataset's trace with the analysis drawn over it and a toolbar above, filling the width of its
- * container. The plot zooms, pans, under the Manual method adds and moves peaks, and under
- * Curvature (vnext) adds domains. Under the
- * Curvature method it can also overlay the −y'' of the smoothed data, on an axis of its own.
+ * A dataset's trace with the analysis drawn over it, and the detection settings and toolbar above,
+ * filling the width of its container. The plot zooms and pans, adds and moves peaks under Manual,
+ * and adds domains under Curvature (vnext). Under the Curvature methods it can also overlay the −y''
+ * of the smoothed data, on an axis of its own.
  *
  * Zooming or panning the plot area moves −y'' along with the trace's y. Each axis can also be
  * zoomed (scroll over it), panned (drag along it) and reset (double-click it) on its own; reset
@@ -106,8 +106,7 @@ export function ChromatogramPlot({
   // Hiding the trace hides the peaks drawn on it too, leaving −y'' and its threshold to read on
   // their own. The table still lists the peaks.
   const [showTrace, setShowTrace] = useState(true)
-  // The domains' boundaries are shown from the start, so a domain just added can be seen. Drawn
-  // apart from −y'', they place the peaks on the trace too.
+  // The domains' boundaries are shown from the start, so a domain just added can be seen.
   const [chosenDomains, setChosenDomains] = useState(true)
   const showDomains = hasSecondDerivative(method) && chosenDomains
   const showSecondDerivative = hasSecondDerivative(method) && chosenSecondDerivative
@@ -154,9 +153,8 @@ export function ChromatogramPlot({
     [showRightAxis, secondFull],
   )
 
-  // −y'' spans the whole curve until the user first moves it. From then on it moves only as the
-  // user zooms and pans, and is kept as the curve is fetched again after an edit, so before and
-  // after can be compared at the same scale.
+  // −y'' spans the whole curve until the user first moves it. After that it keeps its range when the
+  // curve is fetched again, so before and after an edit compare at the same scale.
   const secondView = view.y2 ?? secondFull
 
   // A zoom box or pan in the plot area moves −y'' along with the trace's y, by the same proportion.
@@ -232,7 +230,6 @@ export function ChromatogramPlot({
         onHoverDomain={setHoveredDomain}
         onCommand={onCommand}
       />
-      {/* Right over the plot, as it only changes how the plot is viewed and edited. */}
       <PlotToolbar
         method={method}
         mode={mode}
@@ -251,8 +248,7 @@ export function ChromatogramPlot({
           <DomainToolbar domains={dataset.vnextSettings.domains} onCommand={onCommand} />
         )}
       </PlotToolbar>
-      {/* Below the toolbar, so a message appearing doesn't move the buttons out from under the
-          pointer. */}
+      {/* Below the toolbar, so a new message can't shift the buttons under the pointer. */}
       <MessageList messages={[...overlayErrors, ...(showOtherTraces ? otherTraceMessages : [])]} />
       <div ref={containerRef} className="plot">
         {/* Nothing to draw until the container has been measured. */}
@@ -316,9 +312,7 @@ export function ChromatogramPlot({
                     title="Drag to pan −y″, scroll to zoom it, double-click to fit it to the curve in view"
                   />
                 )}
-                {/* Beneath the data, which lets the pointer through to it except at the handles
-                    on editable peaks, so dragging a handle moves it and dragging elsewhere does
-                    whatever the mode says. */}
+                {/* Beneath the data, which lets the pointer through except at peaks' handles. */}
                 <InteractionLayer
                   mode={mode}
                   altMode={addMode}

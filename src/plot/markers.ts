@@ -1,6 +1,5 @@
 // The shapes of the markers drawn at a peak's apex and ends, as SVG paths in pixels. Each kind of
-// boundary has its own shape, as in the Mathematica preview, so the integration type can be read
-// off the plot.
+// boundary has its own shape, so the integration type can be read off the plot.
 
 import type { CurvatureBoundaryType } from '../api/types'
 

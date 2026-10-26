@@ -26,8 +26,7 @@ export function PeakShape({ peak, highlighted, onMoveBoundaries }: Props) {
   const low = draft?.low ?? peak.low.point
   const high = draft?.high ?? peak.high.point
 
-  // Envelope from the low end to the high end, closed back along the baseline. Built in data
-  // coordinates once per peak, like the trace, since an envelope can have thousands of points.
+  // Envelope from the low end to the high end, closed back along the baseline, in data coordinates.
   // It follows the analysis, not the draft: only the server can say where the new envelope runs.
   const area = useMemo(
     () => dataPath([[peak.low.point.x, peak.low.point.y], ...peak.envelope, [peak.high.point.x, peak.high.point.y]]) + 'Z',
