@@ -1,5 +1,5 @@
 import type { Injection } from '../api/types'
-import { formatNumber } from '../format'
+import { formatNumber } from '../shared/format'
 
 type Props = {
   injections: Injection[]

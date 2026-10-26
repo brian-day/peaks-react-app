@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { addModeFor, hasSecondDerivative } from '../api/methods'
 import type { Command, DatasetSnapshot, Method } from '../api/types'
-import { MessageList } from '../components/MessageList'
+import { MessageList } from '../shared/MessageList'
 import { DomainToolbar } from './DomainToolbar'
 import type { Mode } from './InteractionLayer'
 import { PlotCanvas } from './PlotCanvas'

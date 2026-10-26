@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { formatNumber, parseNumber } from '../format'
+import { formatNumber, parseNumber } from '../shared/format'
 
 type Props = {
   label: string

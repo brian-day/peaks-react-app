@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { addModeFor, hasSecondDerivative } from '../api/methods'
 import type { Method } from '../api/types'
-import { ButtonGroup } from '../components/ButtonGroup'
+import { ButtonGroup } from '../shared/ButtonGroup'
 import type { Mode } from './InteractionLayer'
 
 const MODES: { mode: Mode; label: string; hint: string }[] = [

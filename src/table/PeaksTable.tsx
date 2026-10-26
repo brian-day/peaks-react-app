@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { allPeaks, peakKey } from '../api/peakIdentity'
 import type { AnalysisView, PeakRow, PeakView } from '../api/types'
-import { formatNumber } from '../format'
+import { formatNumber } from '../shared/format'
 import { ColumnPicker } from './ColumnPicker'
 import {
   cellText,

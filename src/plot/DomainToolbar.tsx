@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Command, DomainSettings } from '../api/types'
-import { ButtonGroup } from '../components/ButtonGroup'
+import { ButtonGroup } from '../shared/ButtonGroup'
 import { hasGaps, snapDomains, type Snap } from './domains'
 
 const SNAPS: { snap: Snap; label: string; hint: string }[] = [

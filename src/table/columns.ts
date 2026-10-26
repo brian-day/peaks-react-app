@@ -1,7 +1,7 @@
 // How each of the table's columns is labelled and its values shown.
 
 import type { CellValue, ColumnKey, CurvatureBoundaryType, PeakRow, PeakView } from '../api/types'
-import { formatNumber } from '../format'
+import { formatNumber } from '../shared/format'
 
 /** The data's axis units, which most columns' units derive from. */
 export type AxisUnits = { x: string; y: string }

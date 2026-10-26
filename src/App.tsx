@@ -1,4 +1,4 @@
-import { MessageList } from './components/MessageList'
+import { MessageList } from './shared/MessageList'
 import { ObjectIdForm } from './ObjectIdForm'
 import { useSession } from './useSession'
 import { SessionView } from './SessionView'
