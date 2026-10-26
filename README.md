@@ -51,7 +51,7 @@ You need Node (via `fnm` here), and the DVA repository for `peaks_server`.
 | --------------- | ------------------------------------------------------- |
 | `npm run dev`   | Vite dev server with hot reload                         |
 | `npm run build` | Type-check (`tsc -b`) and build into `dist/`            |
-| `npm run lint`  | oxlint                                                  |
+| `npm run lint`  | ESLint, with type-aware TypeScript and React rules      |
 | `npm test`      | Vitest; tests cover the pure logic, not the components  |
 
 ## Layout

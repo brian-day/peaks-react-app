@@ -15,7 +15,7 @@ polish. The README covers what the app does and how to run it.
 ## Commands
 
 - Node comes from fnm, so prefix shell commands with `eval "$(fnm env --shell zsh)";`.
-- Checks to run after a change: `npx tsc -b`, `npm run lint` (oxlint) and `npx vitest run`.
+- Checks to run after a change: `npx tsc -b`, `npm run lint` (ESLint) and `npx vitest run`.
 - The server, from `~/DVA`: `cargo run --release -p peaks_server`. Always use `--release`, because
   vnext is far too slow in debug. Don't add a named cargo-make task for it.
 - Rust checks: `cargo test -p peaks_server` and `cargo clippy -p peaks_server --all-targets`.
