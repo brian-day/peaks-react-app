@@ -567,6 +567,13 @@ select {
   gap: 8px;
 }
 
+/* The settings that apply to the whole analysis, side by side above the domains. */
+.detection-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
 .domain-table {
   border-collapse: collapse;
   width: 100%;

@@ -5,7 +5,7 @@ import { allPeaks, peakKey } from '../api/peakIdentity'
 import type { Command, DatasetSnapshot, Method, Point } from '../api/types'
 import { MessageList } from '../components/MessageList'
 import { useElementSize } from '../hooks/useElementSize'
-import { DetectionSettings } from '../settings/DetectionSettings'
+import { DetectionSettings, type CurvatureDetection } from '../settings/DetectionSettings'
 import { CURVATURE_EDITS, curvatureDomain, VNEXT_EDITS } from '../settings/domainEdits'
 import { peakAt } from './hitTest'
 import { AnalysisLayer } from './AnalysisLayer'
@@ -13,7 +13,6 @@ import { Axis } from './Axis'
 import { AxisDragArea } from './AxisDragArea'
 import { DomainToolbar } from './DomainToolbar'
 import { InteractionLayer, type Mode } from './InteractionLayer'
-import { MethodPicker } from './MethodPicker'
 import { OtherTraces } from './OtherTraces'
 import { PlotContext, type PlotGeometry } from './plotContext'
 import { PlotToolbar } from './PlotToolbar'
@@ -46,8 +45,8 @@ type Props = {
   method: Method
   /** Whether the session has traces other than this dataset's, as a protocol does. */
   hasOtherTraces: boolean
-  /** Shown between the method picker and the detection settings, such as a protocol's injections. */
-  belowMethod?: ReactNode
+  /** Shown above the detection settings, such as a protocol's injections. */
+  aboveSettings?: ReactNode
   /** Sends an edit to the analysis, resolving once it has been applied or has failed. */
   onCommand: (command: Command) => Promise<void>
   /** The {@link peakKey} of the peak to highlight, whether hovered here or elsewhere. */
@@ -74,7 +73,7 @@ export function ChromatogramPlot({
   dataset,
   method,
   hasOtherTraces,
-  belowMethod,
+  aboveSettings,
   onCommand,
   hoveredKey,
   onHoverPeak,
@@ -87,7 +86,7 @@ export function ChromatogramPlot({
   const [hoveredDomain, setHoveredDomain] = useState<number | null>(null)
   // Both Curvature methods show their settings as domains; the Curvature method's one domain is
   // its threshold's range.
-  const detection = dataset.vnextSettings
+  const curvature: CurvatureDetection | null = dataset.vnextSettings
     ? {
         smoothingMethod: dataset.vnextSettings.smoothingMethod,
         domains: dataset.vnextSettings.domains,
@@ -223,20 +222,16 @@ export function ChromatogramPlot({
 
   return (
     <div className="plot-panel">
-      <MethodPicker
+      {aboveSettings}
+      <DetectionSettings
         method={method}
         onMethodChange={(newMethod) => onCommand({ kind: 'setMethod', method: newMethod })}
+        curvature={curvature}
+        units={{ x: dataset.xUnits, y: dataset.yUnits }}
+        hoveredDomain={hoveredDomain}
+        onHoverDomain={setHoveredDomain}
+        onCommand={onCommand}
       />
-      {belowMethod}
-      {detection && (
-        <DetectionSettings
-          {...detection}
-          units={{ x: dataset.xUnits, y: dataset.yUnits }}
-          hoveredDomain={hoveredDomain}
-          onHoverDomain={setHoveredDomain}
-          onCommand={onCommand}
-        />
-      )}
       {/* Right over the plot, as it only changes how the plot is viewed and edited. */}
       <PlotToolbar
         method={method}
