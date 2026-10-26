@@ -1,6 +1,7 @@
-import { useState, type PointerEvent } from 'react'
+import { useState, type PointerEvent as ReactPointerEvent } from 'react'
 import type { Point } from '../api/types'
 import { usePlot } from './plotContext'
+import { useWindowDrag } from './usePointerDrag'
 import { clampToViewport, pan, zoomBoxOutcome, type MinSpan, type Viewport } from './viewport'
 
 /** What dragging across the plot does. */
@@ -57,13 +58,13 @@ export function InteractionLayer({
   const { xScale, width, height, pointerToData } = usePlot()
   const [drag, setDrag] = useState<Drag | null>(null)
 
-  const toData = (event: PointerEvent) => clampToViewport(pointerToData(event), view)
+  const toData = (event: { clientX: number; clientY: number }) => clampToViewport(pointerToData(event), view)
 
-  function onPointerDown(event: PointerEvent<SVGRectElement>) {
+  function onPointerDown(event: ReactPointerEvent<SVGRectElement>) {
     if (event.button !== 0) return
     // Whatever was under the pointer is not what a drag is about.
     onHover(null)
-    // Keep receiving this pointer's events even once it leaves the plot, until it is released.
+    // Keeps other elements from reacting to the pointer passing over them mid-drag.
     event.currentTarget.setPointerCapture(event.pointerId)
 
     const dragMode = event.shiftKey ? 'pan' : event.altKey && altMode ? altMode : mode
@@ -79,8 +80,11 @@ export function InteractionLayer({
     }
   }
 
-  function onPointerMove(event: PointerEvent<SVGRectElement>) {
-    if (!drag) onHover(pointerToData(event))
+  // Followed across the whole window, so a drag carries on, and ends, wherever the pointer is
+  // released; see useWindowDrag.
+  useWindowDrag(drag !== null, { onMove: onDragMove, onRelease: onDragEnd, onCancel: () => setDrag(null) })
+
+  function onDragMove(event: PointerEvent) {
     switch (drag?.kind) {
       case 'zoomBox':
         return setDrag({ ...drag, end: toData(event) })
@@ -97,7 +101,7 @@ export function InteractionLayer({
     }
   }
 
-  function onPointerUp() {
+  function onDragEnd() {
     if (drag?.kind === 'zoomBox') {
       const outcome = zoomBoxOutcome(drag.start, drag.end, view, minSpan)
       if (outcome.kind === 'zoom') onViewChange(outcome.viewport)
@@ -118,9 +122,9 @@ export function InteractionLayer({
         width={width}
         height={height}
         onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => setDrag(null)}
+        onPointerMove={(event) => {
+          if (!drag) onHover(pointerToData(event))
+        }}
         onPointerLeave={() => onHover(null)}
         onDoubleClick={onResetView}
       />

@@ -1,8 +1,9 @@
-import { useMemo, useState, type PointerEvent } from 'react'
+import { useMemo, useState } from 'react'
 import type { CurvatureBoundaryType, PeakView, Point } from '../api/types'
 import { boundaryMarkerPath, disc, MARKER_RADIUS } from './markers'
 import { usePlot } from './plotContext'
 import { dataPath, dataTransform } from './scale'
+import { usePointerDrag } from './usePointerDrag'
 
 type Props = {
   peak: PeakView
@@ -109,7 +110,7 @@ type HandleProps = {
 /** A boundary point that follows the pointer while dragged, off the trace if need be. */
 function BoundaryHandle({ point, onMove, onRelease }: HandleProps) {
   const { xScale, yScale, pointerToData } = usePlot()
-  const [dragging, setDragging] = useState(false)
+  const { dragging, handlers } = usePointerDrag({ onMove: (event) => onMove(pointerToData(event)), onRelease })
 
   return (
     <circle
@@ -117,20 +118,7 @@ function BoundaryHandle({ point, onMove, onRelease }: HandleProps) {
       cx={xScale(point.x)}
       cy={yScale(point.y)}
       r={5}
-      onPointerDown={(event: PointerEvent<SVGCircleElement>) => {
-        if (event.button !== 0) return
-        event.currentTarget.setPointerCapture(event.pointerId)
-        setDragging(true)
-      }}
-      onPointerMove={(event) => {
-        if (dragging) onMove(pointerToData(event))
-      }}
-      onPointerUp={() => {
-        if (!dragging) return
-        setDragging(false)
-        onRelease()
-      }}
-      onPointerCancel={() => setDragging(false)}
+      {...handlers}
     />
   )
 }

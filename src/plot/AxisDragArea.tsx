@@ -1,4 +1,5 @@
-import { useState, type PointerEvent } from 'react'
+import { useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useWindowDrag } from './usePointerDrag'
 import { pan, type Domain } from './viewport'
 
 type Props = {
@@ -24,8 +25,21 @@ export function AxisDragArea({ orientation, x, y, width, height, domain, full, o
   const [drag, setDrag] = useState<{ start: number; startDomain: Domain } | null>(null)
 
   const horizontal = orientation === 'bottom'
-  const along = (event: PointerEvent) => (horizontal ? event.clientX : event.clientY)
+  const along = (event: { clientX: number; clientY: number }) => (horizontal ? event.clientX : event.clientY)
   const length = horizontal ? width : height
+
+  useWindowDrag(drag !== null, {
+    onMove: (event) => {
+      if (!drag) return
+      // The data follows the pointer, as when panning the plot: the range moves the opposite
+      // way along x, and the same way down a vertical axis, whose pixels run downwards.
+      const { startDomain } = drag
+      const moved = ((along(event) - drag.start) / length) * (startDomain[1] - startDomain[0])
+      onChange(pan(startDomain, horizontal ? -moved : moved, full))
+    },
+    onRelease: () => setDrag(null),
+    onCancel: () => setDrag(null),
+  })
 
   return (
     <rect
@@ -34,21 +48,11 @@ export function AxisDragArea({ orientation, x, y, width, height, domain, full, o
       y={y}
       width={width}
       height={height}
-      onPointerDown={(event: PointerEvent<SVGRectElement>) => {
+      onPointerDown={(event: ReactPointerEvent<SVGRectElement>) => {
         if (event.button !== 0) return
         event.currentTarget.setPointerCapture(event.pointerId)
         setDrag({ start: along(event), startDomain: domain })
       }}
-      onPointerMove={(event) => {
-        if (!drag) return
-        // The data follows the pointer, as when panning the plot: the range moves the opposite
-        // way along x, and the same way down a vertical axis, whose pixels run downwards.
-        const { startDomain } = drag
-        const moved = ((along(event) - drag.start) / length) * (startDomain[1] - startDomain[0])
-        onChange(pan(startDomain, horizontal ? -moved : moved, full))
-      }}
-      onPointerUp={() => setDrag(null)}
-      onPointerCancel={() => setDrag(null)}
       onDoubleClick={onReset}
     >
       <title>{title}</title>

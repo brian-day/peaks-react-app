@@ -1,4 +1,4 @@
-import { useState, type PointerEvent } from 'react'
+import { useState } from 'react'
 import { usePlot } from './plotContext'
 import type { Scale } from './scale'
 import { usePointerDrag } from './usePointerDrag'
