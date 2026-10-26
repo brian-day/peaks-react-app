@@ -4,6 +4,7 @@ import { InjectionTable } from './injections/InjectionTable'
 import { ChromatogramPlot } from './plot/ChromatogramPlot'
 import { DetectionSettings } from './settings/DetectionSettings'
 import { curvatureDetection } from './settings/domainEdits'
+import { PeaksTable } from './table/PeaksTable'
 
 type Props = {
   session: CreatedSession
@@ -12,21 +13,20 @@ type Props = {
   onCommand: (command: Command) => Promise<void>
   /** Shows another of the session's datasets. */
   onSelectDataset: (datasetIndex: number) => void
-  /** The peak to highlight in the plot, whether hovered there or in the peaks table. */
-  hoveredKey: string | null
-  onHoverPeak: (key: string | null) => void
 }
 
 /**
- * One analysis session: a protocol's injections, the active dataset's detection settings, and its
- * plot.
+ * One analysis session: a protocol's injections, and the active dataset's detection settings, plot
+ * and peaks table.
  *
  * Give it a new `key` for each session, so that everything in it starts over: the zoom, what the
- * plot shows, the other injections' traces, and anything half-dragged or half-typed. Switching
- * datasets keeps it all, so injections compare at one scale.
+ * plot shows, the other injections' traces, the table's columns, and anything half-dragged or
+ * half-typed. Switching datasets keeps it all, so injections compare at one scale.
  */
-export function SessionView({ session, method, onCommand, onSelectDataset, hoveredKey, onHoverPeak }: Props) {
+export function SessionView({ session, method, onCommand, onSelectDataset }: Props) {
   const { dataset } = session
+  // The peak under the pointer in the plot or the table, highlighted in both.
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null)
   // The domain hovered in the domain table or on the plot, highlighted in both.
   const [hoveredDomain, setHoveredDomain] = useState<number | null>(null)
 
@@ -36,7 +36,11 @@ export function SessionView({ session, method, onCommand, onSelectDataset, hover
         <InjectionTable
           injections={session.injectionTable}
           activeDataset={dataset.index}
-          onSelectDataset={onSelectDataset}
+          onSelectDataset={(datasetIndex) => {
+            // The hovered peak belongs to the dataset being left.
+            setHoveredKey(null)
+            onSelectDataset(datasetIndex)
+          }}
         />
       )}
       <DetectionSettings
@@ -55,9 +59,17 @@ export function SessionView({ session, method, onCommand, onSelectDataset, hover
         hasOtherTraces={session.datasets.length > 1 || session.injectionTable !== null}
         onCommand={onCommand}
         hoveredKey={hoveredKey}
-        onHoverPeak={onHoverPeak}
+        onHoverPeak={setHoveredKey}
         hoveredDomain={hoveredDomain}
         onHoverDomain={setHoveredDomain}
+      />
+      <PeaksTable
+        rows={dataset.table}
+        analysis={dataset.analysis}
+        units={{ x: dataset.xUnits, y: dataset.yUnits }}
+        domains={dataset.vnextSettings?.domains ?? null}
+        hoveredKey={hoveredKey}
+        onHoverPeak={setHoveredKey}
       />
     </div>
   )

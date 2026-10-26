@@ -373,7 +373,8 @@ select {
 /* Peaks table */
 
 .peaks-table {
-  margin-top: 16px;
+  /* 16px above the plot, with the session view's gap. */
+  margin-top: 8px;
 }
 
 .peaks-table-toolbar {
