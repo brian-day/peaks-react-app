@@ -13,6 +13,18 @@
   --error: #cf222e;
   --second-derivative: #8250df;
 
+  --radius: 6px;
+
+  /* Text smaller than the body's: controls and tables, labels, units, and small group headings. */
+  --font-small: 0.9rem;
+  --font-label: 0.85rem;
+  --font-units: 0.8rem;
+  --font-caption: 0.75rem;
+
+  /* How strongly a row is tinted: under the pointer, or highlighted as the item in focus. */
+  --tint-hover: 6%;
+  --tint-highlight: 12%;
+
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   color: var(--text);
   background: var(--background);
@@ -44,7 +56,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.85rem;
+  font-size: var(--font-label);
   color: var(--muted);
 }
 
@@ -100,7 +112,7 @@ select {
 .plot {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
 .plot svg {
@@ -382,14 +394,46 @@ select {
   overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
-.peaks-table table,
-.injection-table table {
+/* What every table shares; each sets its own text size, padding and alignment. */
+.data-table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 0.9rem;
+}
+
+.data-table th,
+.data-table td {
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+  font-weight: 600;
+  vertical-align: bottom;
+  background: var(--background);
+}
+
+.data-table tbody:last-child tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table .units {
+  display: block;
+  font-weight: 400;
+  font-size: var(--font-units);
+  color: var(--muted);
+}
+
+.peaks-table .data-table,
+.injection-table .data-table {
+  font-size: var(--font-small);
 }
 
 .peaks-table th,
@@ -398,24 +442,10 @@ select {
 .injection-table td {
   padding: 6px 12px;
   text-align: left;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--border);
-}
-
-.peaks-table th,
-.injection-table th {
-  font-weight: 600;
-  vertical-align: bottom;
-  background: var(--background);
-}
-
-.peaks-table tbody:last-child tr:last-child td {
-  border-bottom: none;
 }
 
 .peaks-table .domain-heading th {
   padding: 0;
-  background: var(--background);
 }
 
 /* The whole heading toggles its group, so it reads as a heading rather than a button. */
@@ -445,26 +475,12 @@ select {
   color: var(--muted);
 }
 
-.peaks-table .numeric,
-.injection-table .numeric {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.peaks-table .units,
-.injection-table .units {
-  display: block;
-  font-weight: 400;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
 .peak-row--muted {
   color: var(--muted);
 }
 
 .peak-row--highlighted td {
-  background: color-mix(in srgb, var(--peak) 12%, var(--surface));
+  background: color-mix(in srgb, var(--peak) var(--tint-highlight), var(--surface));
 }
 
 .column-picker {
@@ -473,10 +489,10 @@ select {
 
 .column-picker summary {
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: var(--font-small);
   padding: 4px 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   background: var(--surface);
   list-style: none;
 }
@@ -493,9 +509,9 @@ select {
   min-width: 200px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-  font-size: 0.9rem;
+  font-size: var(--font-small);
 }
 
 .column-picker-menu label {
@@ -508,7 +524,7 @@ select {
 .column-picker-menu button {
   margin-top: 4px;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--font-label);
 }
 
 /* Detection settings */
@@ -516,7 +532,7 @@ select {
 .detection-settings summary,
 .injection-table summary {
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: var(--font-small);
   font-weight: 600;
   margin-bottom: 6px;
   user-select: none;
@@ -529,8 +545,8 @@ select {
 }
 
 .detection-settings label,
-.detection-settings .units {
-  font-size: 0.85rem;
+.number-field .units {
+  font-size: var(--font-label);
   color: var(--muted);
 }
 
@@ -542,7 +558,7 @@ select {
 
 .number-field input {
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--font-small);
   width: 8ch;
   padding: 2px 6px;
   text-align: right;
@@ -555,7 +571,7 @@ select {
 }
 
 .detection-settings select {
-  font-size: 0.9rem;
+  font-size: var(--font-small);
   padding: 3px 24px 3px 7px;
 }
 
@@ -573,9 +589,7 @@ select {
 }
 
 .domain-table {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: 0.85rem;
+  font-size: var(--font-label);
 }
 
 .domain-table th,
@@ -584,22 +598,10 @@ select {
   /* Centred, headings and fields alike, so each field sits squarely under its heading; the
      numbers inside the fields stay right-aligned. */
   text-align: center;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--border);
-}
-
-.domain-table th {
-  font-weight: 600;
-  vertical-align: bottom;
-  background: var(--background);
-}
-
-.domain-table tbody tr:last-child td {
-  border-bottom: none;
 }
 
 .domain-row--highlighted td {
-  background: color-mix(in srgb, var(--second-derivative) 12%, var(--surface));
+  background: color-mix(in srgb, var(--second-derivative) var(--tint-highlight), var(--surface));
 }
 
 .domain-table .number-field {
@@ -611,7 +613,7 @@ select {
   padding-top: 2px;
   padding-bottom: 0;
   border-bottom: none;
-  font-size: 0.75rem;
+  font-size: var(--font-caption);
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
@@ -621,13 +623,6 @@ select {
 /* A thin line down the table where each group starts. */
 .domain-table .group-start {
   border-left: 1px solid var(--border);
-}
-
-.domain-table .units {
-  display: block;
-  font-weight: 400;
-  font-size: 0.8rem;
-  color: var(--muted);
 }
 
 .remove-domain {
@@ -669,14 +664,14 @@ select {
 }
 
 .button-group-label {
-  font-size: 0.85rem;
+  font-size: var(--font-label);
   color: var(--muted);
   margin-right: 8px;
 }
 
 .button-group button {
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--font-small);
   padding: 4px 12px;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -689,11 +684,11 @@ select {
 }
 
 .button-group button:first-of-type {
-  border-radius: 6px 0 0 6px;
+  border-radius: var(--radius) 0 0 var(--radius);
 }
 
 .button-group button:last-of-type {
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 
 .button-group button[aria-pressed='true'] {
@@ -724,10 +719,6 @@ select {
 
 /* Injections */
 
-.injection-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
 /* Names wrap rather than widen the table past the page. */
 .injection-table .injection-sample,
 .injection-table .injection-gradient {
@@ -748,12 +739,12 @@ select {
 }
 
 .injection-row--selectable:hover td {
-  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+  background: color-mix(in srgb, var(--accent) var(--tint-hover), var(--surface));
 }
 
 .injection-row--active td,
 .injection-row--active:hover td {
-  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  background: color-mix(in srgb, var(--accent) var(--tint-highlight), var(--surface));
   font-weight: 600;
 }
 

@@ -25,7 +25,7 @@ export function InjectionTable({ injections, activeDataset, onSelectDataset }: P
     <details className="injection-table" open>
       <summary>Injections</summary>
       <div className="table-frame">
-        <table>
+        <table className="data-table">
           <thead>
             <tr>
               <th className="numeric">#</th>

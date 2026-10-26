@@ -79,7 +79,7 @@ export function PeaksTable({ rows, analysis, units, domains, hoveredKey, onHover
         <p className="status">No peaks.</p>
       ) : (
         <div className="table-frame">
-          <table>
+          <table className="data-table">
             <thead>
               <tr>
                 {columns.map((column) => {

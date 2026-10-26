@@ -125,7 +125,7 @@ export function DomainTable({ domains, edits, units, hoveredDomain, onHoverDomai
 
   return (
     <div className="table-frame">
-      <table className="domain-table">
+      <table className="data-table domain-table">
         <thead>
           <tr className="domain-table-groups">
             <th />
