@@ -60,9 +60,8 @@ polish. The README covers what the app does and how to run it.
   - Doc comments say what something is for, in plain English.
   - There's no Prettier: wrap lines at about 120 characters, as the existing code does.
 - **Text in the UI:**
-  - Headings, column labels and toolbar group labels are in **title case**.
+  - Headings, column labels, toolbar group labels and button labels are in **title case**.
   - Tooltips are sentences.
-  - Button labels haven't been settled.
 - **Matching the Mathematica preview:** it's a starting point, not a spec. Deviate where a different
   interaction is clearly better, and say why.
 
