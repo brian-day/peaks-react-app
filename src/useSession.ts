@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { ApiError, applyCommand, createSession, setActiveDataset } from '../api/client'
-import type { ApiMessage, Command, CreatedSession, Method, ObjectType } from '../api/types'
+import { ApiError, applyCommand, createSession, setActiveDataset } from './api/client'
+import type { ApiMessage, Command, CreatedSession, Method, ObjectType } from './api/types'
 
 export type SessionState =
   | { status: 'idle' }

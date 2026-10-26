@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ObjectType } from '../api/types'
+import type { ObjectType } from './api/types'
 
 // A chromatography data object on stage, so there is something to analyze straight away.
 const EXAMPLE_OBJECT_ID = 'id:M8n3rxPqa87E'

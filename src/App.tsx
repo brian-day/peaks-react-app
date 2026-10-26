@@ -1,6 +1,6 @@
 import { MessageList } from './components/MessageList'
-import { ObjectIdForm } from './components/ObjectIdForm'
-import { useSession } from './hooks/useSession'
+import { ObjectIdForm } from './ObjectIdForm'
+import { useSession } from './useSession'
 import { SessionView } from './SessionView'
 
 function App() {
